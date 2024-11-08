@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "757239413803",
+    "firebase_url": "https://fingerprint-bba55.firebaseio.com",
+    "project_id": "fingerprint-bba55",
+    "storage_bucket": "fingerprint-bba55.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:757239413803:android:5988d0e1a01733f8387e6e",
+        "android_client_info": {
+          "package_name": "com.example.scenario_management"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "757239413803-1jqcit1jgl9f0dg62vqcu4i8rtmj0pd0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwZOx0RuCv4h6Ueg3X3W9BXdLJT990eLY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "757239413803-1jqcit1jgl9f0dg62vqcu4i8rtmj0pd0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
