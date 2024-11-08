@@ -1,7 +1,7 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 
-import '../../app_state.dart';
+import '../../redux/app_state.dart';
 import 'login_page.dart';
 import 'login_screen_view_model.dart';
 

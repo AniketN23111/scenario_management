@@ -1,12 +1,13 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:scenario_management/route_names/route_names.dart';
+import 'package:scenario_management/screens/home_screen/my_home_page_connector.dart';
+import 'package:scenario_management/screens/login_screen/login_screen_connector.dart';
+import 'package:scenario_management/screens/register_screen/register_screen_connector.dart';
 
 import 'Firebase/firebase_options.dart';
-import 'RouteNames/route_names.dart';
-import 'Views/LoginScreen/login_screen_connector.dart';
-import 'Views/my_home_page.dart';
-import 'app_state.dart';
+import 'redux/app_state.dart';
 
 ///Declare Store
 late Store<AppState> store;
@@ -41,18 +42,18 @@ class _MyAppState extends State<MyApp> {
         ),
         initialRoute: RoutesName.loginScreen,
         routes: {
-          RoutesName.homePageScreen: (context) => const MyHomePage(title: ''),
+          RoutesName.homePageScreen: (context) => const HomeScreenConnector(),
           RoutesName.loginScreen: (context) => const LoginScreenConnector(),
-          //RoutesName.register: (context) => const RegisterScreenConnector(),
+          RoutesName.registerScreen: (context) => const RegisterScreenConnector(),
         },
         onGenerateRoute: (settings) {
           switch (settings.name) {
             case RoutesName.homePageScreen:
               return MaterialPageRoute(
-                  builder: (context) => const MyHomePage(title: ''));
-            /* case RoutesName.register:
+                  builder: (context) => const HomeScreenConnector());
+             case RoutesName.registerScreen:
             return MaterialPageRoute(
-                builder: (context) => RegisterScreenConnector());*/
+                builder: (context) => const RegisterScreenConnector());
             case RoutesName.loginScreen:
               return MaterialPageRoute(
                   builder: (context) => const LoginScreenConnector());

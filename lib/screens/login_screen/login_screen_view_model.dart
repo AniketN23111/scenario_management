@@ -1,8 +1,8 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:scenario_management/AsyncRedux/LoginScreen/login_screen_sign_in_with_email_and_password_action.dart';
 
 import '../../TypeDef/type_def.dart';
-import '../../app_state.dart';
+import '../../redux/actions/login_screen/login_with_email_password_action.dart';
+import '../../redux/app_state.dart';
 import 'login_screen_connector.dart';
 
 ///Login Screen View Model
@@ -25,7 +25,7 @@ class Factory
   LoginScreenViewModel fromStore() => LoginScreenViewModel(
         isLoading: state.loading,
         signInWithEmailAndPasswordTypeDef: (String email, String password) {
-          dispatch(LoginScreenSignInWithEmailAndPasswordAction(
+          dispatch(LoginWithEmailPasswordAction(
               email: email, password: password));
         },
       );

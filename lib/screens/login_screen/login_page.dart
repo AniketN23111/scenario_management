@@ -1,14 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../RouteNames/route_names.dart';
 import '../../TypeDef/type_def.dart';
-
+import '../../route_names/route_names.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool? isLoading;
   final SignInWithEmailAndPasswordTypeDef signInWithEmailAndPassword;
-  const LoginScreen({super.key, required this.isLoading,  required this.signInWithEmailAndPassword});
+
+  const LoginScreen(
+      {super.key,
+      required this.isLoading,
+      required this.signInWithEmailAndPassword});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -21,30 +23,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-  }
-
-  void userLogin() async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-      Future.delayed(const Duration(seconds: 3), () {
-        Navigator.pushNamed(context, RoutesName.homePageScreen);
-      });
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'INVALID_LOGIN_CREDENTIALS') {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Invalid Login Credentials'),
-          backgroundColor: Colors.redAccent,
-        ));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('${e.code}'),
-          backgroundColor: Colors.redAccent,
-        ));
-      }
-    }
   }
 
   @override
@@ -103,13 +81,25 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(
               height: 20,
             ),
-            ElevatedButton(onPressed: userLogin, child: const Text('Login')),
+            widget.isLoading == null || widget.isLoading == true
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : ElevatedButton(
+                    onPressed: () {
+                      widget.signInWithEmailAndPassword(
+                          _emailController.text, _passwordController.text);
+                      if(widget.isLoading==false){
+                        Navigator.pushNamed(context, RoutesName.homePageScreen);
+                      }
+                    },
+                    child: const Text('Login')),
             const SizedBox(
               height: 20,
             ),
             TextButton(
                 onPressed: () {
-                  //Navigator.pushNamed(context, RoutesName.register);
+                  Navigator.pushNamed(context, RoutesName.registerScreen);
                 },
                 child: const Text('Register')),
           ],

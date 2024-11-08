@@ -23,6 +23,7 @@ class DefaultFirebaseOptions {
     appId: '1:757239413803:android:5988d0e1a01733f8387e6e',
     messagingSenderId: '757239413803',
     projectId: 'fingerprint-bba55',
+    databaseURL: 'https://fingerprint-bba55.firebaseio.com',
   );
 
   ///Firebase Option For the IOS

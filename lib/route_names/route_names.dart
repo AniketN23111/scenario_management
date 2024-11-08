@@ -1,0 +1,10 @@
+///Routes Names
+class RoutesName {
+  ///HomePage
+  static const String homePageScreen = '/homeScreen';
+  ///LoginScreen
+  static const String loginScreen = '/loginScreen';
+  ///RegisterScreen
+  static const String registerScreen = '/registerScreen';
+
+}

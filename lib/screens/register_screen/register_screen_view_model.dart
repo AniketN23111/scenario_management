@@ -1,0 +1,31 @@
+import 'package:async_redux/async_redux.dart';
+import 'package:scenario_management/TypeDef/type_def.dart';
+import 'package:scenario_management/screens/register_screen/register_screen_connector.dart';
+
+import '../../redux/actions/register_screen/register_with_email_designation_action.dart';
+import '../../redux/app_state.dart';
+
+class RegisterScreenViewModel extends Vm {
+  final bool isLoading;
+  final RegisterWithEmailAndDesignationTypeDef
+      registerWithEmailAndDesignationTypeDef;
+
+  RegisterScreenViewModel(
+      {required this.isLoading,
+      required this.registerWithEmailAndDesignationTypeDef})
+      : super(equals: [isLoading]);
+}
+
+class Factory extends VmFactory<AppState, RegisterScreenConnector,
+    RegisterScreenViewModel> {
+  Factory(connector) : super(connector);
+
+  @override
+  RegisterScreenViewModel? fromStore() => RegisterScreenViewModel(
+      isLoading: state.loading,
+      registerWithEmailAndDesignationTypeDef:
+          (String email, String password, String designation) {
+        dispatch(RegisterWithEmailDesignationAction(
+            email: email, password: password, designation: designation));
+      });
+}
