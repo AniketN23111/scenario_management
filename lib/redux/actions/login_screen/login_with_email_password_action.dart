@@ -4,6 +4,7 @@ import 'package:async_redux/async_redux.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../constants/hive_service.dart';
 import '../../../models/user_model.dart';
 import '../../app_state.dart';
 import '../loading_actions/is_loaded.dart';
@@ -38,9 +39,10 @@ class LoginWithEmailPasswordAction extends ReduxAction<AppState> {
 
       // Retrieve designation from Firestore
       String designation = userDoc['designation'] ?? 'Unknown';
-
       // Create UserModel from Firebase User
       final userModel = UserModel.fromFirebaseUser(currentUser, designation);
+      // Save UserModel using HiveService
+      await HiveService().saveUser(userModel);
       // Return updated state with userModel
       return state.copy(userModel: userModel);
     } else {

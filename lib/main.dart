@@ -2,11 +2,16 @@ import 'package:async_redux/async_redux.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:scenario_management/route_names/route_names.dart';
-import 'package:scenario_management/screens/home_screen/my_home_page_connector.dart';
+import 'package:scenario_management/screens/home_screen/home_screen_connector.dart';
 import 'package:scenario_management/screens/login_screen/login_screen_connector.dart';
 import 'package:scenario_management/screens/register_screen/register_screen_connector.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:scenario_management/screens/splash/splash_screen.dart';
 
 import 'Firebase/firebase_options.dart';
+
+import 'constants/hive_service.dart';
+import 'models/user_model.dart';
 import 'redux/app_state.dart';
 
 ///Declare Store
@@ -19,6 +24,12 @@ Future<void> main() async {
   store = Store<AppState>(initialState: state);
   ///Initialize Firebase In App
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  ///Initialize Hive
+  await Hive.initFlutter();
+ ///Register the UserModelAdapter
+  Hive.registerAdapter(UserModelAdapter());
+  /// Initialize HiveService
+  await HiveService().init();
 
   runApp(const MyApp());
 }
@@ -40,10 +51,11 @@ class _MyAppState extends State<MyApp> {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        initialRoute: RoutesName.loginScreen,
+        initialRoute: RoutesName.splashScreen,
         routes: {
           RoutesName.homePageScreen: (context) => const HomeScreenConnector(),
           RoutesName.loginScreen: (context) => const LoginScreenConnector(),
+          RoutesName.splashScreen: (context) => const SplashScreen(),
           RoutesName.registerScreen: (context) => const RegisterScreenConnector(),
         },
         onGenerateRoute: (settings) {
@@ -57,6 +69,9 @@ class _MyAppState extends State<MyApp> {
             case RoutesName.loginScreen:
               return MaterialPageRoute(
                   builder: (context) => const LoginScreenConnector());
+            case RoutesName.splashScreen:
+              return MaterialPageRoute(
+                  builder: (context) => const SplashScreen());
           }
           return MaterialPageRoute(
             builder: (context) => const Scaffold(

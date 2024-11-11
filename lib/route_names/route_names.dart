@@ -6,5 +6,7 @@ class RoutesName {
   static const String loginScreen = '/loginScreen';
   ///RegisterScreen
   static const String registerScreen = '/registerScreen';
+  ///SplashScreen
+  static const String splashScreen = '/splashScreen';
 
 }

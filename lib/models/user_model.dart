@@ -1,20 +1,26 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hive/hive.dart';
 
-///Model For Storing the Basic Details of User
-class UserModel {
-  String? id;
-  String? email;
-  String? name;
-  String? designation;
+part 'user_model.g.dart';
 
-  UserModel({this.id, this.email, this.name,this.designation});
+@HiveType(typeId: 0) // Ensure typeId is unique within your app
+class UserModel extends HiveObject {
+  @HiveField(0)
+  final String? uid;
 
-  /// Method to create a UserModel from Firebase User
-  factory UserModel.fromFirebaseUser(User user,String designation) {
+  @HiveField(1)
+  final String? email;
+
+  @HiveField(2)
+  final String? designation;
+
+  UserModel({ this.uid, this.email, this.designation});
+
+  // Method to create a UserModel from Firebase User and additional data
+  factory UserModel.fromFirebaseUser(User user, String designation) {
     return UserModel(
-      email: user.email,
-      name: user.displayName,
-      id: user.uid,
+      uid: user.uid,
+      email: user.email!,
       designation: designation,
     );
   }
