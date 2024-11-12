@@ -8,5 +8,7 @@ class RoutesName {
   static const String registerScreen = '/registerScreen';
   ///SplashScreen
   static const String splashScreen = '/splashScreen';
+///Scenario Details Page
+  static const String testCaseScreen = '/testCaseScreen';
 
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../role_based_ui/role_based_ui.dart';
 import '../../firebase/firestore_services.dart';
 import '../../constants/role_based_theme.dart';
 import '../../models/user_model.dart';
-import '../../widgets/role_based_ui.dart';
 import '../../models/scenario.dart';
 import '../../route_names/route_names.dart';
 
@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             Expanded(
               child: RoleBasedUI(
-                userModel: widget.userModel,
+                userModel: widget.userModel!,
                 scenarios: _scenarios,
                 onAddScenario: _addScenario,
               ),

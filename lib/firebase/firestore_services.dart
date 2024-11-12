@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/assignment.dart';
-import '../models/comment.dart';
+/*import '../models/assignment.dart';
+import '../models/comment.dart';*/
 import '../models/scenario.dart';
 import '../models/test_cases.dart';
 
@@ -31,8 +31,7 @@ class FirestoreService {
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('scenarios') // Assuming projects are stored here
-          .where('createdBy',
-              isEqualTo:userEmail)
+          .where('createdBy', isEqualTo: userEmail)
           .get();
 
       return querySnapshot.docs.map((doc) {
@@ -44,10 +43,10 @@ class FirestoreService {
           createdAt: (data['createdAt'] as Timestamp).toDate(),
           project: data['project'],
           createdBy: data['createdBy'],
+
         );
       }).toList();
     } catch (e) {
-      print('Error fetching projects: $e');
       return [];
     }
   }
@@ -65,27 +64,56 @@ class FirestoreService {
   ///Get Test Cases By Scenario
   Future<List<TestCase>> getTestCasesByScenario(String scenarioId) async {
     final querySnapshot = await _db
-        .collection('test_cases')
-        .where('scenario', isEqualTo: scenarioId)
+        .collection('scenarios')
+        .doc(scenarioId)
+        .collection('testCases')
         .get();
 
     return querySnapshot.docs.map((doc) {
       final data = doc.data();
+
       return TestCase(
         id: doc.id,
-        name: data['name'],
-        scenarioId: data['scenario'],
-        bugId: data['bugId'],
-        status: data['status'],
-        tags: List<String>.from(data['tags']),
-        description: data['description'],
-        comments: data['comments'],
-        attachment: data['attachment'],
+        name: data['name'] ?? '',
+        scenarioId: scenarioId,
+        bugId: data['bugId'] ?? '',
+        description: data['description'] ?? '',
+        comments: data['comments'] ?? '',
+        attachment: data['attachment'] ?? '',
+        status: data['status'] ?? 'pending',
+        assignedBy: data['assignedBy'] ?? '',
+        assignedUsers: data['assignedUsers'] ?? ''
       );
     }).toList();
   }
 
-  /// Add a comment to a test case
+  ///Update Test Case
+  Future<void> updateTestCase(String scenarioId, TestCase testCase) async {
+    await _db
+        .collection('scenarios')
+        .doc(scenarioId)
+        .collection('testCases')
+        .doc(testCase.id)
+        .update(testCase.toMap());
+  }
+
+  ///Get users Names
+  Future<List<String>> getUserNames() async {
+    try {
+      // Get the users collection from Firestore
+      QuerySnapshot snapshot = await _db.collection('users').get();
+
+      // Extract user names from the documents
+      List<String> userNames = snapshot.docs
+          .map((doc) => doc['name'] as String)
+          .toList();
+
+      return userNames;
+    } catch (e) {
+      throw Exception("Failed to fetch user names: $e");
+    }
+  }
+  /*/// Add a comment to a test case
   Future<void> addComment(
       String scenarioId, String testCaseId, Comment comment) async {
     await _db
@@ -107,5 +135,5 @@ class FirestoreService {
         .doc(testCaseId)
         .collection('assignments')
         .add(assignment.toMap());
-  }
+  }*/
 }

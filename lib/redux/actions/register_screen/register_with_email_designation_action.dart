@@ -9,15 +9,18 @@ import '../../app_state.dart';
 import '../loading_actions/is_loaded.dart';
 import '../loading_actions/is_loading.dart'; // Import Firestore package
 
-
 /// Sign In with Email And Password Action in Login Screen
 class RegisterWithEmailDesignationAction extends ReduxAction<AppState> {
   late final String email;
   late final String password;
   late final String designation;
+  late final String name;
 
   RegisterWithEmailDesignationAction(
-      {required this.email, required this.password, required this.designation});
+      {required this.email,
+      required this.password,
+      required this.designation,
+      required this.name});
 
   @override
   Future<AppState?> reduce() async {
@@ -31,15 +34,15 @@ class RegisterWithEmailDesignationAction extends ReduxAction<AppState> {
 
       /// Save additional user data (designation) to Firebase FireStore
       await FirebaseFirestore.instance
-          .collection('designation')
+          .collection('users')
           .doc(userCredential.user!.uid)
           .set({
         'email': email.trim(),
+        'name': name,
         'designation': designation,
       });
 
-      /// If successful, navigate to the login route
-      dispatch(NavigateAction.pushNamed(RoutesName.loginScreen));
+
     } on FirebaseAuthException catch (e) {
       // Handle specific errors here if needed
       if (e.code == 'weak-password') {
@@ -56,6 +59,8 @@ class RegisterWithEmailDesignationAction extends ReduxAction<AppState> {
   @override
   void after() {
     dispatch(IsLoaded());
+    /// If successful, navigate to the login route
+    dispatch(NavigateAction.pushReplacementNamed(RoutesName.loginScreen));
     super.after();
   }
 

@@ -16,9 +16,9 @@ class RegisterScreenConnector extends StatelessWidget {
       builder: (context, vm) => RegisterScreen(
         isLoading: vm.isLoading,
         registerWithEmailAndDesignationTypeDef:
-            (String email, String password, String designation) {
+            (String email, String password, String designation,String name) {
           vm.registerWithEmailAndDesignationTypeDef(
-              email, password, designation);
+              email, password, designation,name);
         },
       ),
     );

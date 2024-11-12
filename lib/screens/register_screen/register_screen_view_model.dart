@@ -24,8 +24,8 @@ class Factory extends VmFactory<AppState, RegisterScreenConnector,
   RegisterScreenViewModel? fromStore() => RegisterScreenViewModel(
       isLoading: state.loading,
       registerWithEmailAndDesignationTypeDef:
-          (String email, String password, String designation) {
+          (String email, String password, String designation,String name) {
         dispatch(RegisterWithEmailDesignationAction(
-            email: email, password: password, designation: designation));
+            email: email, password: password, designation: designation,name: name));
       });
 }

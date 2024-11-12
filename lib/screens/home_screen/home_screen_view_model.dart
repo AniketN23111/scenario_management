@@ -1,8 +1,8 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:scenario_management/redux/actions/my_home_page/check_existing_user_action.dart';
 
 import '../../models/user_model.dart';
-import '../../redux/actions/my_home_page/home_page_signout_action.dart';
+import '../../redux/actions/home_screen/check_existing_user_action.dart';
+import '../../redux/actions/home_screen/home_page_signout_action.dart';
 import '../../redux/app_state.dart';
 import 'home_screen_connector.dart';
 

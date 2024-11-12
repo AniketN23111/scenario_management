@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../constants/hive_service.dart';
 import '../../../models/user_model.dart';
+import '../../../route_names/route_names.dart';
 import '../../app_state.dart';
 import '../loading_actions/is_loaded.dart';
 import '../loading_actions/is_loading.dart';
@@ -33,14 +34,16 @@ class LoginWithEmailPasswordAction extends ReduxAction<AppState> {
       // Fetch the user document from Firestore
       final DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection(
-              'designation')
+              'users')
           .doc(currentUser.uid)
           .get();
 
       // Retrieve designation from Firestore
       String designation = userDoc['designation'] ?? 'Unknown';
+      // Retrieve name from Firestore
+      String name = userDoc['name'] ?? 'Unknown';
       // Create UserModel from Firebase User
-      final userModel = UserModel.fromFirebaseUser(currentUser, designation);
+      final userModel = UserModel.fromFirebaseUser(currentUser, designation,name);
       // Save UserModel using HiveService
       await HiveService().saveUser(userModel);
       // Return updated state with userModel
@@ -54,6 +57,8 @@ class LoginWithEmailPasswordAction extends ReduxAction<AppState> {
   @override
   void after() {
     dispatch(IsLoaded());
+    /// If successful, navigate to the login route
+    dispatch(NavigateAction.pushReplacementNamed(RoutesName.homePageScreen));
     super.after();
   }
 
