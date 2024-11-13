@@ -8,7 +8,7 @@ import 'package:scenario_management/screens/register_screen/register_screen_conn
 import 'package:hive_flutter/adapters.dart';
 import 'package:scenario_management/screens/splash/splash_screen.dart';
 import 'package:scenario_management/screens/test_case_details/test_case.dart';
-import 'package:scenario_management/screens/test_case_details/test_case_arguments.dart';
+import 'package:scenario_management/constants/test_case_arguments.dart';
 
 import 'Firebase/firebase_options.dart';
 

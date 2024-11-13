@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
-import '../custom_widgets/scenario_list.dart';
 import '../custom_widgets/add_scenario_form.dart';
 import '../../models/scenario.dart';
 
 class RoleBasedUI extends StatelessWidget {
   final UserModel? userModel;
-  final List<Scenario> scenarios;
   final Function(Scenario scenario) onAddScenario;
 
   const RoleBasedUI({
     super.key,
     required this.userModel,
-    required this.scenarios,
     required this.onAddScenario,
   });
 
@@ -23,7 +20,6 @@ class RoleBasedUI extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ScenarioList(userModel: userModel!),
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {

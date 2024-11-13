@@ -4,6 +4,7 @@ import 'package:scenario_management/screens/register_screen/register_screen_conn
 
 import '../../redux/actions/register_screen/register_with_email_designation_action.dart';
 import '../../redux/app_state.dart';
+import '../../route_names/route_names.dart';
 
 class RegisterScreenViewModel extends Vm {
   final bool isLoading;
@@ -27,5 +28,7 @@ class Factory extends VmFactory<AppState, RegisterScreenConnector,
           (String email, String password, String designation,String name) {
         dispatch(RegisterWithEmailDesignationAction(
             email: email, password: password, designation: designation,name: name));
+        /// If successful, navigate to the login route
+        dispatch(NavigateAction.pushNamed(RoutesName.loginScreen));
       });
 }

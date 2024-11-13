@@ -4,6 +4,7 @@ class Scenario {
   String id;
   String name;
   String project;
+  String projectID;
   String description;
   DateTime createdAt;
   String createdBy;
@@ -12,6 +13,7 @@ class Scenario {
     required this.id,
     required this.name,
     required this.project,
+    required this.projectID,
     required this.description,
     required this.createdAt,
     required this.createdBy,
@@ -21,6 +23,7 @@ class Scenario {
     'id': id,
     'name': name,
     'project': project,
+    'projectID': projectID,
     'description': description,
     'createdAt': createdAt,
     'createdBy': createdBy,
@@ -30,6 +33,7 @@ class Scenario {
     id: map['id'],
     name: map['name'],
     project: map['project'],
+    projectID: map['projectID'],
     description: map['description'],
     createdAt: (map['createdAt'] as Timestamp).toDate(),
     createdBy: map['createdBy'],

@@ -4,7 +4,6 @@ import 'package:async_redux/async_redux.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../route_names/route_names.dart';
 import '../../app_state.dart';
 import '../loading_actions/is_loaded.dart';
 import '../loading_actions/is_loading.dart'; // Import Firestore package
@@ -59,8 +58,6 @@ class RegisterWithEmailDesignationAction extends ReduxAction<AppState> {
   @override
   void after() {
     dispatch(IsLoaded());
-    /// If successful, navigate to the login route
-    dispatch(NavigateAction.pushReplacementNamed(RoutesName.loginScreen));
     super.after();
   }
 
