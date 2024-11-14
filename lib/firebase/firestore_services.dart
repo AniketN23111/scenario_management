@@ -18,7 +18,6 @@ class FirestoreService {
               })
           .toList();
     } catch (e) {
-      print('Error fetching projects: $e');
       return [];
     }
   }
@@ -35,7 +34,7 @@ class FirestoreService {
       // Update the document with its own ID as projectID
       await docRef.update({'projectID': docRef.id});
     } catch (e) {
-      print('Error creating new project: $e');
+      return;
     }
   }
 
@@ -62,7 +61,7 @@ class FirestoreService {
       projectId = projectQuery.docs.first.id;
     }
 
-    // Add scenario to the `scenarios` subcollection only if it doesn't exist
+    // Add scenario to the `scenarios` sub collection only if it doesn't exist
     final scenarioRef = _db
         .collection('projects')
         .doc(projectId)
@@ -77,7 +76,7 @@ class FirestoreService {
           .set(scenario.toMap()); // Use set() to specify the document ID
       return scenario.id; // Return the predefined scenario ID
     } else {
-      print('Scenario already exists in Firestore.');
+
       return scenario.id; // Return existing scenario ID if it already exists
     }
   }
@@ -92,7 +91,7 @@ class FirestoreService {
         .get();
 
     return snapshot.docs.map((doc) {
-      return Scenario.fromMap(doc.data() as Map<String, dynamic>);
+      return Scenario.fromMap(doc.data());
     }).toList();
   }
 
@@ -165,7 +164,6 @@ class FirestoreService {
           .set(testCase.toMap()); // Use set() to specify the document ID
       return testCase.id!; // Return the predefined test case ID
     } else {
-      print('Test case with this ID already exists in Firestore.');
       return testCase.id!; // Return the existing test case ID
     }
   }
@@ -253,7 +251,7 @@ class FirestoreService {
 
         await commentRef.set(newComment.toJson());
       } catch (e) {
-        print('Error adding comment: $e');
+       return;
       }
     }
   }
@@ -276,7 +274,6 @@ class FirestoreService {
         return Comment.fromJson(doc.data(), doc.id);
       }).toList();
     } catch (e) {
-      print('Error fetching comments: $e');
       return [];
     }
   }
