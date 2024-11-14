@@ -2,13 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:scenario_management/models/user_model.dart';
 import 'package:scenario_management/models/scenario.dart';
 
-import '../firebase/firestore_services.dart';
+import '../../firebase/firestore_services.dart';
 
 class AddScenarioForm extends StatefulWidget {
-  final Function(Scenario scenario) onScenarioAdded;
   final UserModel userModel;
+  final Scenario scenario;
+  final void Function(Scenario scenario) addScenario;
+  final List<Map<String, dynamic>> projects;
+  final void Function() fetchProjects;
 
-  const AddScenarioForm({super.key, required this.onScenarioAdded, required this.userModel});
+  const AddScenarioForm(
+      {super.key,
+      required this.userModel,
+      required this.scenario,
+      required this.addScenario,
+      required this.fetchProjects,
+      required this.projects});
 
   @override
   _AddScenarioFormState createState() => _AddScenarioFormState();
@@ -21,28 +30,23 @@ class _AddScenarioFormState extends State<AddScenarioForm> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _newProjectController = TextEditingController();
 
-  final FirestoreService _firestoreService = FirestoreService(); // FirestoreService instance
+  final FirestoreService _firestoreService =
+      FirestoreService(); // FirestoreService instance
   String? _selectedProjectId;
-  List<Map<String, dynamic>> _projects = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchProjects();
-  }
-
-  Future<void> _fetchProjects() async {
-    final projects = await _firestoreService.getProjects(); // Fetching projects
-    setState(() {
-      _projects = projects;
-    });
+    widget.fetchProjects();
   }
 
   Future<void> _createNewProject() async {
     if (_newProjectController.text.isNotEmpty) {
-      await _firestoreService.createNewProject(_newProjectController.text); // Creating new project
-      await _fetchProjects(); // Refresh the projects list after adding a new project
-      _selectedProjectId = _projects.last['id']; // Automatically select the new project
+      await _firestoreService
+          .createNewProject(_newProjectController.text); // Creating new project
+      widget.fetchProjects;
+      _selectedProjectId =
+      widget.projects.last['id'];
       _newProjectController.clear();
     }
   }
@@ -54,13 +58,13 @@ class _AddScenarioFormState extends State<AddScenarioForm> {
         name: _nameController.text,
         description: _descriptionController.text,
         projectID: _selectedProjectId!,
-        project: _projects.firstWhere((proj) => proj['id'] == _selectedProjectId)['name'],
+        project: widget.projects
+            .firstWhere((proj) => proj['id'] == _selectedProjectId)['name'],
         createdAt: DateTime.now(),
         createdBy: widget.userModel.email!,
       );
 
-      _firestoreService.addScenario(scenario); // Adding scenario to Firestore
-      widget.onScenarioAdded(scenario);
+      widget.addScenario(scenario);
       Navigator.pop(context);
     }
   }
@@ -77,17 +81,19 @@ class _AddScenarioFormState extends State<AddScenarioForm> {
             TextFormField(
               controller: _idController,
               decoration: const InputDecoration(labelText: 'Scenario ID'),
-              validator: (value) => value?.isEmpty ?? true ? 'Enter a scenario ID' : null,
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Enter a scenario ID' : null,
             ),
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Scenario Name'),
-              validator: (value) => value?.isEmpty ?? true ? 'Enter a scenario name' : null,
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Enter a scenario name' : null,
             ),
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Project'),
               value: _selectedProjectId,
-              items: _projects.map((project) {
+              items: widget.projects.map((project) {
                 return DropdownMenuItem<String>(
                   value: project['id'],
                   child: Text(project['name']),
@@ -113,7 +119,8 @@ class _AddScenarioFormState extends State<AddScenarioForm> {
             TextFormField(
               controller: _descriptionController,
               decoration: const InputDecoration(labelText: 'Description'),
-              validator: (value) => value?.isEmpty ?? true ? 'Enter a description' : null,
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Enter a description' : null,
             ),
           ],
         ),

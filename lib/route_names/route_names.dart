@@ -10,5 +10,7 @@ class RoutesName {
   static const String splashScreen = '/splashScreen';
 ///Scenario Details Page
   static const String testCaseScreen = '/testCaseScreen';
+///Edit Test Case
+  static const String editTestCaseScreen = '/editTestCaseScreen';
 
 }

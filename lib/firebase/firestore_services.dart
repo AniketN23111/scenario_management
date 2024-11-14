@@ -163,10 +163,10 @@ class FirestoreService {
       // Test case does not exist, so add it with the predefined ID
       await testCaseRef
           .set(testCase.toMap()); // Use set() to specify the document ID
-      return testCase.id; // Return the predefined test case ID
+      return testCase.id!; // Return the predefined test case ID
     } else {
       print('Test case with this ID already exists in Firestore.');
-      return testCase.id; // Return the existing test case ID
+      return testCase.id!; // Return the existing test case ID
     }
   }
 

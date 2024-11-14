@@ -1,29 +1,33 @@
 import 'package:flutter/material.dart';
-import 'add_test_case_dialog.dart';
-import 'edit_test_case_screen.dart';
-import '../../firebase/firestore_services.dart';
-import '../../models/scenario.dart';
-import '../../models/test_cases.dart';
-import '../../models/user_model.dart';
+import '../../../models/scenario.dart';
+import '../../../models/test_cases.dart';
+import '../../../models/user_model.dart';
+import '../../../route_names/route_names.dart';
+import '../add_test_case_dialog.dart';
+
 
 class TestCaseScreen extends StatefulWidget {
   final Scenario? scenario;
   final UserModel? userModel;
+  final Future<List<TestCase>> listTestCase;
+  final void Function(Scenario scenario) getTestCaseByScenario;
 
-  const TestCaseScreen({super.key, this.scenario, this.userModel});
+  const TestCaseScreen(
+      {super.key,
+      required this.scenario,
+      required this.userModel,
+      required this.listTestCase,
+      required this.getTestCaseByScenario});
 
   @override
   State<TestCaseScreen> createState() => _TestCaseScreenState();
 }
 
 class _TestCaseScreenState extends State<TestCaseScreen> {
-  final FirestoreService firestoreService = FirestoreService();
-  Future<List<TestCase>>? _testCasesFuture;
-
   @override
   void initState() {
     super.initState();
-    _testCasesFuture = firestoreService.getTestCasesByScenario(widget.scenario!.projectID, widget.scenario!.id);
+    widget.getTestCaseByScenario(widget.scenario!);
   }
 
   @override
@@ -33,7 +37,7 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
         title: Text('${widget.scenario!.project} - ${widget.scenario!.name}'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: () {
               _showAddTestCaseDialog();
             },
@@ -41,7 +45,7 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
         ],
       ),
       body: FutureBuilder<List<TestCase>>(
-        future: _testCasesFuture,
+        future: widget.listTestCase,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -51,7 +55,8 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
           }
           final testCases = snapshot.data ?? [];
           if (testCases.isEmpty) {
-            return const Center(child: Text('No test cases found for this scenario.'));
+            return const Center(
+                child: Text('No test cases found for this scenario.'));
           }
 
           return ListView.builder(
@@ -62,7 +67,9 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
                 title: Text('TestCase Name: ${testCase.name}'),
                 subtitle: Text('Status: ${testCase.status}'),
                 trailing: Text('Test Case ID: ${testCase.id}'),
-                onTap: () => _editTestCase(testCase,widget.scenario!,widget.userModel),
+                onTap: () => Navigator.pushNamed(
+                    context, RoutesName.editTestCaseScreen,
+                    arguments: testCase),
               );
             },
           );
@@ -88,17 +95,7 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
   // Refresh the list of test cases
   void _refreshTestCases() {
     setState(() {
-      _testCasesFuture = firestoreService.getTestCasesByScenario(widget.scenario!.projectID, widget.scenario!.id);
+      widget.getTestCaseByScenario(widget.scenario!);
     });
-  }
-
-  // Navigate to the EditTestCaseScreen for editing a test case
-  void _editTestCase(TestCase testCase,Scenario scenario,UserModel? userModel) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditTestCaseScreen(testCase: testCase,scenario :scenario,userModel: userModel!),
-      ),
-    );
   }
 }

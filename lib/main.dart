@@ -1,14 +1,16 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:scenario_management/models/scenario.dart';
+import 'package:scenario_management/models/test_cases.dart';
 import 'package:scenario_management/route_names/route_names.dart';
 import 'package:scenario_management/screens/home_screen/home_screen_connector.dart';
 import 'package:scenario_management/screens/login_screen/login_screen_connector.dart';
 import 'package:scenario_management/screens/register_screen/register_screen_connector.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:scenario_management/screens/splash/splash_screen.dart';
-import 'package:scenario_management/screens/test_case_details/test_case.dart';
-import 'package:scenario_management/constants/test_case_arguments.dart';
+import 'package:scenario_management/screens/test_case_details/edi_test_case/edit_test_case_connector.dart';
+import 'package:scenario_management/screens/test_case_details/test_case_screen/test_case_connector.dart';
 
 import 'Firebase/firebase_options.dart';
 
@@ -65,6 +67,10 @@ class _MyAppState extends State<MyApp> {
           RoutesName.splashScreen: (context) => const SplashScreen(),
           RoutesName.registerScreen: (context) =>
               const RegisterScreenConnector(),
+          RoutesName.testCaseScreen: (context) =>
+          const TestCaseScreenConnector(),
+          /*RoutesName.editTestCaseScreen: (context) =>
+          const EditTestCaseScreenConnector()*/
         },
         onGenerateRoute: (settings) {
           switch (settings.name) {
@@ -83,17 +89,19 @@ class _MyAppState extends State<MyApp> {
             case RoutesName.testCaseScreen:
               return settings.arguments != null
                   ? MaterialPageRoute(
-                      builder: (context) {
-                        final args =
-                            settings.arguments as TestCaseScreenArguments;
-                        return TestCaseScreen(
-                          scenario: args.scenario,
-                          userModel: args.userModel,
-                        );
-                      },
-                    )
+                  builder: (context) => TestCaseScreenConnector(
+                      scenario:
+                      settings.arguments as Scenario))
                   : MaterialPageRoute(
-                      builder: (context) => const TestCaseScreen());
+                  builder: (context) => const TestCaseScreenConnector());
+            case RoutesName.editTestCaseScreen:
+              return settings.arguments != null
+                  ? MaterialPageRoute(
+                  builder: (context) => EditTestCaseScreenConnector(
+                      testCase:
+                      settings.arguments as TestCase))
+                  : MaterialPageRoute(
+                  builder: (context) => const EditTestCaseScreenConnector());
           }
           return MaterialPageRoute(
             builder: (context) => const Scaffold(

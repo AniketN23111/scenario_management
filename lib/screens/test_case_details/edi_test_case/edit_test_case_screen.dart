@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:scenario_management/models/scenario.dart';
-import '../../firebase/firestore_services.dart';
-import '../../models/test_cases.dart';
-import '../../models/user_model.dart';
+import '../../../firebase/firestore_services.dart';
+import '../../../models/test_cases.dart';
+import '../../../models/user_model.dart';
 
 class EditTestCaseScreen extends StatefulWidget {
   final TestCase testCase;
   final UserModel userModel;
   final Scenario scenario;
+  final void Function(Scenario scenario,TestCase updatedTestCase) updateTestCase;
 
-  const EditTestCaseScreen({super.key, required this.testCase,required this.scenario, required this.userModel});
+  const EditTestCaseScreen({super.key, required this.testCase,required this.scenario, required this.userModel,required this.updateTestCase});
 
   @override
   _EditTestCaseScreenState createState() => _EditTestCaseScreenState();
@@ -67,21 +68,19 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
         bugId: _bugIdController.text,
         status: _status!,
         description: _descriptionController.text,
-        comments: widget.testCase.comments,
-        attachment: widget.testCase.attachment, // Assuming no attachment change
+        comments: _commentsController.text,
+        attachment: widget.testCase.attachment,
         scenarioId: widget.testCase.scenarioId,
         assignedBy: widget.testCase.assignedBy,
         assignedUsers: _assignedUserName ?? widget.testCase.assignedUsers,
       );
-
-      // Save the updated test case to Firestore
-      await firestoreService.updateTestCase(widget.testCase.id, widget.scenario,updatedTestCase);
+      widget.updateTestCase(widget.scenario,updatedTestCase);
 
       // Show a success message and navigate back
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Test Case Updated Successfully')),
       );
-      Navigator.of(context).pop();
+      Navigator.pop(context);
     } else {
       // Show a validation error
       ScaffoldMessenger.of(context).showSnackBar(

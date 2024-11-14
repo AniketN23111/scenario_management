@@ -1,39 +1,24 @@
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
-import '../custom_widgets/add_scenario_form.dart';
-import '../../models/scenario.dart';
 
 class RoleBasedUI extends StatelessWidget {
   final UserModel? userModel;
-  final Function(Scenario scenario) onAddScenario;
 
   const RoleBasedUI({
     super.key,
     required this.userModel,
-    required this.onAddScenario,
+
   });
 
   Widget _buildUIForRole(BuildContext context, String role) {
     switch (role) {
       case 'Junior Tester':
       case 'Tester Lead':
-        return Column(
+        return const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AddScenarioForm(
-                    onScenarioAdded: onAddScenario,
-                    userModel: userModel!,
-                  ),
-                );
-              },
-              child: const Text('Add New Scenario'),
-            ),
-            const SizedBox(height: 10),
+
+            SizedBox(height: 10),
           ],
         );
       default:

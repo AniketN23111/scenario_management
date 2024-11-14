@@ -9,7 +9,7 @@ import '../../models/user_model.dart';
 class AddTestCaseDialog extends StatefulWidget {
   final Scenario? scenario;
   final UserModel? userModel;
-  final VoidCallback onTestCaseAdded; // Callback to refresh the list
+  final VoidCallback onTestCaseAdded;
 
   const AddTestCaseDialog({
     super.key,
@@ -86,7 +86,7 @@ class _AddTestCaseDialogState extends State<AddTestCaseDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add Test Case'),
+      title: const Text('Add Test Case'),
       content: SingleChildScrollView(
         child: Form(
           key: _testCaseFormKey,
@@ -145,7 +145,7 @@ class _AddTestCaseDialogState extends State<AddTestCaseDialog> {
               ),
 
               ElevatedButton(onPressed: _pickAndUploadImage, child: const Text('Upload File')),
-              ElevatedButton(onPressed: _submitTestCaseForm, child: Text('Save Test Case')),
+              ElevatedButton(onPressed: _submitTestCaseForm, child: const Text('Save Test Case')),
             ],
           ),
         ),
