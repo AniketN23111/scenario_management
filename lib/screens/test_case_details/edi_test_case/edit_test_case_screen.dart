@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scenario_management/models/scenario.dart';
+import '../../../constants/role_based_theme.dart';
 import '../../../firebase/firestore_services.dart';
 import '../../../models/test_cases.dart';
 import '../../../models/user_model.dart';
@@ -8,9 +9,15 @@ class EditTestCaseScreen extends StatefulWidget {
   final TestCase testCase;
   final UserModel userModel;
   final Scenario scenario;
-  final void Function(Scenario scenario,TestCase updatedTestCase) updateTestCase;
+  final void Function(Scenario scenario, TestCase updatedTestCase)
+      updateTestCase;
 
-  const EditTestCaseScreen({super.key, required this.testCase,required this.scenario, required this.userModel,required this.updateTestCase});
+  const EditTestCaseScreen(
+      {super.key,
+      required this.testCase,
+      required this.scenario,
+      required this.userModel,
+      required this.updateTestCase});
 
   @override
   _EditTestCaseScreenState createState() => _EditTestCaseScreenState();
@@ -35,7 +42,8 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
     // Initialize the controllers with current test case data
     _nameController = TextEditingController(text: widget.testCase.name);
     _bugIdController = TextEditingController(text: widget.testCase.bugId);
-    _descriptionController = TextEditingController(text: widget.testCase.description);
+    _descriptionController =
+        TextEditingController(text: widget.testCase.description);
     _commentsController = TextEditingController(text: widget.testCase.comments);
     _status = widget.testCase.status;
     _assignedUserName = widget.testCase.assignedUsers;
@@ -58,12 +66,12 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
     if (_nameController.text.isNotEmpty &&
         _bugIdController.text.isNotEmpty &&
         _descriptionController.text.isNotEmpty &&
-        _commentsController.text.isNotEmpty &&
+        //_commentsController.text.isNotEmpty &&
         _status != null) {
-
       // Create the updated test case object
       TestCase updatedTestCase = TestCase(
-        id: widget.testCase.id, // Keep the same ID
+        id: widget.testCase.id,
+        // Keep the same ID
         name: _nameController.text,
         bugId: _bugIdController.text,
         status: _status!,
@@ -74,7 +82,7 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
         assignedBy: widget.testCase.assignedBy,
         assignedUsers: _assignedUserName ?? widget.testCase.assignedUsers,
       );
-      widget.updateTestCase(widget.scenario,updatedTestCase);
+      widget.updateTestCase(widget.scenario, updatedTestCase);
 
       // Show a success message and navigate back
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,14 +100,17 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Edit Test Case: ${widget.testCase.name}')),
+      appBar: AppBar(
+          backgroundColor: roleColors[widget.userModel.designation ?? 'Tester'],
+          title: Text('Edit Test Case: ${widget.testCase.name}')),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Editing ${widget.testCase.name}', style: Theme.of(context).textTheme.headlineMedium),
+              Text('Editing ${widget.testCase.name}',
+                  style: Theme.of(context).textTheme.headlineMedium),
               const SizedBox(height: 16),
 
               // Test Case Name
@@ -135,27 +146,33 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
               // Status (Dropdown)
               DropdownButtonFormField<String>(
                 value: _status != null &&
-                    ['Passed', 'Failed', 'In-Review', 'Completed'].contains(_status)
+                        ['Passed', 'Failed', 'In-Review', 'Completed']
+                            .contains(_status)
                     ? _status
                     : null,
                 decoration: const InputDecoration(labelText: 'Status'),
                 items: ['Passed', 'Failed', 'In-Review', 'Completed'].map(
-                      (status) {
-                    bool isEnabled = _userDesignation != 'Junior Tester' || status != 'Completed';
+                  (status) {
+                    bool isEnabled = _userDesignation != 'Junior Tester' ||
+                        status != 'Completed';
                     return DropdownMenuItem(
                       value: status,
                       enabled: isEnabled,
-                      child: Text(status, style: TextStyle(color: isEnabled ? Colors.black : Colors.grey)),
+                      child: Text(status,
+                          style: TextStyle(
+                              color: isEnabled ? Colors.black : Colors.grey)),
                     );
                   },
                 ).toList(),
                 onChanged: (value) {
-                  if (_userDesignation != 'Junior Tester' || value != 'Completed') {
+                  if (_userDesignation != 'Junior Tester' ||
+                      value != 'Completed') {
                     setState(() => _status = value);
                   }
                 },
                 hint: Text(_status ?? 'Select Status'),
-                validator: (value) => value == null ? 'Please select a status' : null,
+                validator: (value) =>
+                    value == null ? 'Please select a status' : null,
               ),
               const SizedBox(height: 8),
               /*FutureBuilder<List<String>>(
@@ -196,7 +213,18 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
               // Save Button
               ElevatedButton(
                 onPressed: _submitTestCaseForm,
-                child: const Text('Save Changes'),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  backgroundColor: Colors.blueAccent,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                ),
+                child: const Text(
+                  'Save Changes',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),

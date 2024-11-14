@@ -38,6 +38,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Map to track the expanded state of each project
   final Map<String, bool> _expandedStates = {};
 
   @override
@@ -55,149 +56,145 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('Home - ${widget.userModel.designation ?? 'User'}'),
         backgroundColor: roleColors[widget.userModel.designation ?? 'Tester'],
         elevation: 0,
-        // Removes the shadow for a clean look
         centerTitle: true,
       ),
-      body: widget.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Email: ${widget.userModel.email}',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Text(
-                    'Designation: ${widget.userModel.designation}',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 20),
-                  // Display projects and their scenarios using ExpansionTile
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: widget.projects.length,
-                      itemBuilder: (context, index) {
-                        final project = widget.projects[index];
-                        final projectId = project['id'] ?? 'Unknown ID';
-                        final projectName =
-                            project['name'] ?? 'Unnamed Project';
+      body:  Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Email: ${widget.userModel.email}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            Text(
+              'Designation: ${widget.userModel.designation}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 20),
+            // Display projects and their scenarios using ExpansionTile
+            Expanded(
+              child: ListView.builder(
+                itemCount: widget.projects.length,
+                itemBuilder: (context, index) {
+                  final project = widget.projects[index];
+                  final projectId = project['id'] ?? 'Unknown ID';
+                  final projectName =
+                      project['name'] ?? 'Unnamed Project';
 
-                        return ExpansionTile(
-                          title: Text(
-                            projectName,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          onExpansionChanged: (expanded) {
-                            setState(() {
-                              _expandedStates[projectId] = expanded;
-                            });
+                  return ExpansionTile(
+                    title: Text(
+                      projectName,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    initiallyExpanded: _expandedStates[projectId] ?? false, // Maintain expanded state
+                    onExpansionChanged: (expanded) async {
+                      setState(() {
+                        _expandedStates[projectId] = expanded;
+                      });
 
-                            // Fetch scenarios only if expanded and not already loaded
-                            if (expanded &&
-                                (widget.projectScenarios[projectId] == null ||
-                                    widget.projectScenarios[projectId]!
-                                        .isEmpty)) {
-                              widget.fetchScenariosByProject(projectId);
-                            }
-                          },
-                          children: [
-                            if (widget.projectScenarios[projectId]?.isEmpty ??
-                                true)
-                              const ListTile(
-                                title: Text(
-                                    'No scenarios available for this project'),
-                              )
-                            else
-                              ...widget.projectScenarios[projectId]!
-                                  .map((scenario) {
-                                return Card(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  shadowColor: Colors.blueGrey.withOpacity(0.2),
-                                  elevation: 3,
-                                  margin: const EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 16),
-                                  child: ListTile(
-                                    contentPadding: const EdgeInsets.all(16),
-                                    title: Text(
-                                      'Scenario Name: ${scenario.name}',
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    subtitle: Text(
-                                      'Scenario description: ${scenario.description}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
-                                    ),
-                                    trailing: const Text(
-                                      'Add Test Case',
-                                      style: TextStyle(color: Colors.blue),
-                                    ),
-                                    onTap: () {
-                                      widget.updateScenarioStore(scenario);
-                                      Navigator.pushNamed(
-                                          context, RoutesName.testCaseScreen,
-                                          arguments: scenario);
-                                    },
-                                  ),
-                                );
-                              }),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => const AddScenarioConnector(),
-                      );
+                      // Fetch scenarios only if expanded and not already loaded
+                      if (expanded &&
+                          (widget.projectScenarios[projectId] == null ||
+                              widget.projectScenarios[projectId]!
+                                  .isEmpty)) {
+                        widget.fetchScenariosByProject(projectId);
+                      }
                     },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      backgroundColor: Colors.blueAccent,
-                      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                    ),
-                    child: const Text(
-                      'Add Scenario',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.signOut();
-                      Navigator.pushNamed(context, RoutesName.loginScreen);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      backgroundColor: Colors.redAccent,
-                      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                    ),
-                    child: const Text(
-                      'Log Out',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+                    children: [
+                      if (widget.projectScenarios[projectId]?.isEmpty ?? true)
+                        const ListTile(
+                          title: Text('No scenarios available for this project'),
+                        )
+                      else
+                        ...widget.projectScenarios[projectId]!
+                            .map((scenario) {
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            shadowColor: Colors.blueGrey.withOpacity(0.2),
+                            elevation: 3,
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 16),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(16),
+                              title: Text(
+                                'Scenario Name: ${scenario.name}',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                'Scenario description: ${scenario.description}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium,
+                              ),
+                              trailing: const Text(
+                                'Add Test Case',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                              onTap: () {
+                                widget.updateScenarioStore(scenario);
+                                Navigator.pushNamed(
+                                    context, RoutesName.testCaseScreen,
+                                    arguments: scenario);
+                              },
+                            ),
+                          );
+                        }),
+                    ],
+                  );
+                },
               ),
             ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => const AddScenarioConnector(),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                backgroundColor: Colors.blueAccent,
+                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+              ),
+              child: const Text(
+                'Add Scenario',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                widget.signOut();
+                Navigator.pushNamed(context, RoutesName.loginScreen);
+              },
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                backgroundColor: Colors.redAccent,
+                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+              ),
+              child: const Text(
+                'Log Out',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

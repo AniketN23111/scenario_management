@@ -23,6 +23,7 @@ class AddScenarioConnector extends StatelessWidget {
         scenario: vm.scenario,
         projects: vm.projects,
         addScenario: vm.addScenario,
+        createProject: vm.createProject,
         fetchProjects: vm.fetchProjects,
       ),
     );

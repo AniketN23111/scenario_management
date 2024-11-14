@@ -28,6 +28,8 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
   String? selectedAssignedBy;
   String? selectedAssignedUser;
   String searchQuery = '';
+  String selectedSearchField = 'name';
+  TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -42,40 +44,83 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
         backgroundColor: roleColors[widget.userModel?.designation ?? 'Tester'],
         title: Text('${widget.scenario!.project} - ${widget.scenario!.name}'),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(80),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value;
-                });
-                _refreshTestCases();
-              },
-              decoration: InputDecoration(
-                hintText: "Search Test Cases...",
-                hintStyle: TextStyle(color: Colors.grey[500]),
-                suffixIcon: searchQuery.isNotEmpty
-                    ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      searchQuery = '';
-                    });
-                    _refreshTestCases();
-                  },
-                )
-                    : null,
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: Colors.grey, width: 1),
+          preferredSize: const Size.fromHeight(70),
+          child: Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  children: [
+                    // Dropdown for selecting search field
+                    Expanded(
+                      flex: 2,
+                      child: DropdownButton<String>(
+                        style: const TextStyle(color: Colors.black),
+                        value: selectedSearchField,
+                        items: const [
+                          DropdownMenuItem(value: 'name', child: Text('Name')),
+                          DropdownMenuItem(
+                              value: 'status', child: Text('Status')),
+                          DropdownMenuItem(
+                              value: 'assignedBy', child: Text('Assigned By')),
+                          DropdownMenuItem(
+                              value: 'assignedUsers',
+                              child: Text('Assigned Users')),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedSearchField = value!;
+                          });
+                        },
+                        isExpanded: true,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Search input field
+                    Expanded(
+                      flex: 3,
+                      child: TextField(
+                        controller: _searchController,
+                        onEditingComplete: () {
+                          setState(() {
+                            searchQuery = _searchController.text;
+                          });
+                          _refreshTestCases();
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Search Test Cases...",
+                          hintStyle: TextStyle(color: Colors.grey[500]),
+                          suffixIcon: searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    setState(() {
+                                      searchQuery = '';
+                                      _searchController.clear();
+                                    });
+                                    _refreshTestCases();
+                                  },
+                                )
+                              : null,
+                          prefixIcon:
+                              const Icon(Icons.search, color: Colors.grey),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide:
+                                const BorderSide(color: Colors.grey, width: 1),
+                          ),
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 16),
+                          fillColor: Colors.white,
+                          filled: true,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                fillColor: Colors.white,
-                filled: true,
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -144,8 +189,8 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
   // Apply filtering to the test cases list
   List<TestCase> _applyFilters(List<TestCase> testCases) {
     final queryFiltered = testCases.where((testCase) {
-      bool matchesSearchQuery = searchQuery.isEmpty ||
-          testCase.name!.toLowerCase().contains(searchQuery.toLowerCase());
+      bool matchesSearchQuery =
+          searchQuery.isEmpty || _fieldMatchesSearchQuery(testCase);
       bool matchesAssignedBy = selectedAssignedBy == null ||
           testCase.assignedBy == selectedAssignedBy;
       bool matchesAssignedUser = selectedAssignedUser == null ||
@@ -153,6 +198,28 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
       return matchesSearchQuery && matchesAssignedBy && matchesAssignedUser;
     }).toList();
     return queryFiltered;
+  }
+
+  // Helper method to match the selected field with the search query
+  bool _fieldMatchesSearchQuery(TestCase testCase) {
+    switch (selectedSearchField) {
+      case 'name':
+        return testCase.name!.toLowerCase().contains(searchQuery.toLowerCase());
+      case 'status':
+        return testCase.status!
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase());
+      case 'assignedBy':
+        return testCase.assignedBy!
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase());
+      case 'assignedUsers':
+        return testCase.assignedUsers!
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase());
+      default:
+        return false;
+    }
   }
 
   // Refresh the list of test cases based on the new filter

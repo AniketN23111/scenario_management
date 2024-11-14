@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:scenario_management/models/user_model.dart';
 import 'package:scenario_management/models/scenario.dart';
 
-import '../../firebase/firestore_services.dart';
-
 class AddScenarioForm extends StatefulWidget {
   final UserModel userModel;
   final Scenario scenario;
   final void Function(Scenario scenario) addScenario;
+  final void Function(String projectName) createProject;
   final List<Map<String, dynamic>> projects;
   final void Function() fetchProjects;
 
@@ -16,6 +15,7 @@ class AddScenarioForm extends StatefulWidget {
       required this.userModel,
       required this.scenario,
       required this.addScenario,
+      required this.createProject,
       required this.fetchProjects,
       required this.projects});
 
@@ -30,8 +30,6 @@ class _AddScenarioFormState extends State<AddScenarioForm> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _newProjectController = TextEditingController();
 
-  final FirestoreService _firestoreService =
-      FirestoreService(); // FirestoreService instance
   String? _selectedProjectId;
 
   @override
@@ -42,14 +40,28 @@ class _AddScenarioFormState extends State<AddScenarioForm> {
 
   Future<void> _createNewProject() async {
     if (_newProjectController.text.isNotEmpty) {
-      await _firestoreService
-          .createNewProject(_newProjectController.text); // Creating new project
-      widget.fetchProjects;
-      _selectedProjectId =
-      widget.projects.last['id'];
-      _newProjectController.clear();
+      // Create new project
+       widget.createProject(_newProjectController.text);
+
+      // Wait for projects to be updated
+      widget.fetchProjects();
+
+      // Delay until the fetch operation is completed (you may need a callback or a state update check here)
+      Future.delayed(const Duration(milliseconds: 500), () {
+        // Ensure the selected project ID is updated properly
+        if (widget.projects.isNotEmpty) {
+          setState(() {
+            // Assign the last added project to the selected project ID
+            _selectedProjectId = widget.projects.last['id'];
+          });
+        }
+
+        // Clear the text field after creating a project
+        _newProjectController.clear();
+      });
     }
   }
+
 
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
