@@ -54,18 +54,25 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         title: Text('Home - ${widget.userModel.designation ?? 'User'}'),
         backgroundColor: roleColors[widget.userModel.designation ?? 'Tester'],
+        elevation: 0,
+        // Removes the shadow for a clean look
+        centerTitle: true,
       ),
-      body:widget.isLoading == true
+      body: widget.isLoading
           ? const Center(child: CircularProgressIndicator())
-          :Padding(
+          : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Email: ${widget.userModel.email}',
-                      style: const TextStyle(fontSize: 16)),
-                  Text('Designation: ${widget.userModel.designation}',
-                      style: const TextStyle(fontSize: 16)),
+                  Text(
+                    'Email: ${widget.userModel.email}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Text(
+                    'Designation: ${widget.userModel.designation}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: 20),
                   // Display projects and their scenarios using ExpansionTile
                   Expanded(
@@ -73,35 +80,59 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: widget.projects.length,
                       itemBuilder: (context, index) {
                         final project = widget.projects[index];
-                        final projectId = project['id'] ??
-                            'Unknown ID'; // Use 'id' instead of 'projectID'
+                        final projectId = project['id'] ?? 'Unknown ID';
                         final projectName =
                             project['name'] ?? 'Unnamed Project';
 
                         return ExpansionTile(
-                          title: Text(projectName),
+                          title: Text(
+                            projectName,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
                           onExpansionChanged: (expanded) {
                             setState(() {
                               _expandedStates[projectId] = expanded;
                             });
 
                             // Fetch scenarios only if expanded and not already loaded
-                            if (expanded && (widget.projectScenarios[projectId] == null || widget.projectScenarios[projectId]!.isEmpty)) {
+                            if (expanded &&
+                                (widget.projectScenarios[projectId] == null ||
+                                    widget.projectScenarios[projectId]!
+                                        .isEmpty)) {
                               widget.fetchScenariosByProject(projectId);
                             }
                           },
                           children: [
-                            if (widget.projectScenarios[projectId]?.isEmpty ?? true)
+                            if (widget.projectScenarios[projectId]?.isEmpty ??
+                                true)
                               const ListTile(
-                                title: Text('No scenarios available for this project'),
+                                title: Text(
+                                    'No scenarios available for this project'),
                               )
                             else
-                              ...widget.projectScenarios[projectId]!.map((scenario) {
+                              ...widget.projectScenarios[projectId]!
+                                  .map((scenario) {
                                 return Card(
-                                  shadowColor: Colors.lightBlue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  shadowColor: Colors.blueGrey.withOpacity(0.2),
+                                  elevation: 3,
+                                  margin: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 16),
                                   child: ListTile(
-                                    title: Text('Scenario Name: ${scenario.name}'),
-                                    subtitle: Text('Scenario description: ${scenario.description}'),
+                                    contentPadding: const EdgeInsets.all(16),
+                                    title: Text(
+                                      'Scenario Name: ${scenario.name}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Text(
+                                      'Scenario description: ${scenario.description}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
+                                    ),
                                     trailing: const Text(
                                       'Add Test Case',
                                       style: TextStyle(color: Colors.blue),
@@ -114,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     },
                                   ),
                                 );
-                              }).toList(),
+                              }),
                           ],
                         );
                       },
@@ -123,19 +154,46 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {
-
                       showDialog(
-                          context: context,
-                          builder: (context) => const AddScenarioConnector());
+                        context: context,
+                        builder: (context) => const AddScenarioConnector(),
+                      );
                     },
-                    child: const Text('Add New Scenario'),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      backgroundColor: Colors.blueAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    ),
+                    child: const Text(
+                      'Add Scenario',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {
                       widget.signOut();
                       Navigator.pushNamed(context, RoutesName.loginScreen);
                     },
-                    child: const Text('Log out'),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      backgroundColor: Colors.redAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    ),
+                    child: const Text(
+                      'Log Out',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ],
               ),

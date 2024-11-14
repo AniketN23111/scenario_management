@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../constants/role_based_theme.dart';
 import '../../../models/scenario.dart';
 import '../../../models/test_cases.dart';
 import '../../../models/user_model.dart';
 import '../../../route_names/route_names.dart';
 import '../add_test_case_dialog.dart';
-
 
 class TestCaseScreen extends StatefulWidget {
   final Scenario? scenario;
@@ -12,18 +12,23 @@ class TestCaseScreen extends StatefulWidget {
   final Future<List<TestCase>> listTestCase;
   final void Function(Scenario scenario) getTestCaseByScenario;
 
-  const TestCaseScreen(
-      {super.key,
-      required this.scenario,
-      required this.userModel,
-      required this.listTestCase,
-      required this.getTestCaseByScenario});
+  const TestCaseScreen({
+    super.key,
+    required this.scenario,
+    required this.userModel,
+    required this.listTestCase,
+    required this.getTestCaseByScenario,
+  });
 
   @override
   State<TestCaseScreen> createState() => _TestCaseScreenState();
 }
 
 class _TestCaseScreenState extends State<TestCaseScreen> {
+  String? selectedAssignedBy;
+  String? selectedAssignedUser;
+  String searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -34,15 +39,45 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: roleColors[widget.userModel?.designation ?? 'Tester'],
         title: Text('${widget.scenario!.project} - ${widget.scenario!.name}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              _showAddTestCaseDialog();
-            },
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(80),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
+                _refreshTestCases();
+              },
+              decoration: InputDecoration(
+                hintText: "Search Test Cases...",
+                hintStyle: TextStyle(color: Colors.grey[500]),
+                suffixIcon: searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      searchQuery = '';
+                    });
+                    _refreshTestCases();
+                  },
+                )
+                    : null,
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: Colors.grey, width: 1),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                fillColor: Colors.white,
+                filled: true,
+              ),
+            ),
           ),
-        ],
+        ),
       ),
       body: FutureBuilder<List<TestCase>>(
         future: widget.listTestCase,
@@ -59,26 +94,74 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
                 child: Text('No test cases found for this scenario.'));
           }
 
+          // Apply the filtering logic
+          final filteredTestCases = _applyFilters(testCases);
+
           return ListView.builder(
-            itemCount: testCases.length,
+            itemCount: filteredTestCases.length,
             itemBuilder: (context, index) {
-              final testCase = testCases[index];
-              return ListTile(
-                title: Text('TestCase Name: ${testCase.name}'),
-                subtitle: Text('Status: ${testCase.status}'),
-                trailing: Text('Test Case ID: ${testCase.id}'),
-                onTap: () => Navigator.pushNamed(
-                    context, RoutesName.editTestCaseScreen,
-                    arguments: testCase),
+              final testCase = filteredTestCases[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  title: Text(
+                    'TestCase: ${testCase.name}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    'Status: ${testCase.status}',
+                    style: const TextStyle(color: Colors.blueGrey),
+                  ),
+                  trailing: Chip(
+                    label: Text('ID: ${testCase.id}'),
+                    backgroundColor: Colors.red,
+                    labelStyle: const TextStyle(color: Colors.white),
+                  ),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    RoutesName.editTestCaseScreen,
+                    arguments: testCase,
+                  ),
+                ),
               );
             },
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddTestCaseDialog,
+        backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
-  // Show the dialog for adding a test case
+  // Apply filtering to the test cases list
+  List<TestCase> _applyFilters(List<TestCase> testCases) {
+    final queryFiltered = testCases.where((testCase) {
+      bool matchesSearchQuery = searchQuery.isEmpty ||
+          testCase.name!.toLowerCase().contains(searchQuery.toLowerCase());
+      bool matchesAssignedBy = selectedAssignedBy == null ||
+          testCase.assignedBy == selectedAssignedBy;
+      bool matchesAssignedUser = selectedAssignedUser == null ||
+          testCase.assignedUsers == selectedAssignedUser;
+      return matchesSearchQuery && matchesAssignedBy && matchesAssignedUser;
+    }).toList();
+    return queryFiltered;
+  }
+
+  // Refresh the list of test cases based on the new filter
+  void _refreshTestCases() {
+    setState(() {
+      widget.getTestCaseByScenario(widget.scenario!);
+    });
+  }
+
   void _showAddTestCaseDialog() {
     showDialog(
       context: context,
@@ -90,12 +173,5 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
         );
       },
     );
-  }
-
-  // Refresh the list of test cases
-  void _refreshTestCases() {
-    setState(() {
-      widget.getTestCaseByScenario(widget.scenario!);
-    });
   }
 }
