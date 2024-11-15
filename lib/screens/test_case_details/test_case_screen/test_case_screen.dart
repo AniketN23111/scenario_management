@@ -9,7 +9,7 @@ import '../add_test_case_dialog.dart';
 class TestCaseScreen extends StatefulWidget {
   final Scenario? scenario;
   final UserModel? userModel;
-  final Future<List<TestCase>> listTestCase;
+  final List<TestCase> listTestCase;
   final void Function(Scenario scenario) getTestCaseByScenario;
 
   const TestCaseScreen({
@@ -125,7 +125,7 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
         ),
       ),
       body: FutureBuilder<List<TestCase>>(
-        future: widget.listTestCase,
+        future: Future.value(widget.listTestCase),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

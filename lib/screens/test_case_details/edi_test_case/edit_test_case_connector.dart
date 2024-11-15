@@ -4,6 +4,8 @@ import 'package:scenario_management/models/scenario.dart';
 import 'package:scenario_management/models/user_model.dart';
 import 'package:scenario_management/screens/test_case_details/edi_test_case/edit_test_case_view_model.dart';
 
+import '../../../models/comments.dart';
+import '../../../models/status_change_log.dart';
 import '../../../models/test_cases.dart';
 import '../../../redux/app_state.dart';
 import 'edit_test_case_screen.dart';
@@ -13,18 +15,21 @@ class EditTestCaseScreenConnector extends StatelessWidget {
   final TestCase? testCase;
   final UserModel? userModel;
   final Scenario? scenario;
-  final void Function(Scenario scenario, TestCase updatedTestCase)? updateTestCase;
+  final List<StatusChange>? statusChangeList;
+  final List<Comments>? commentList;
 
-
-  const EditTestCaseScreenConnector(
-      {super.key, this.testCase, this.scenario, this.userModel, this.updateTestCase});
+  const EditTestCaseScreenConnector({
+    super.key,
+    this.testCase,
+    this.scenario,
+    this.userModel,
+    this.statusChangeList,
+    this.commentList,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final arguments = ModalRoute
-        .of(context)!
-        .settings
-        .arguments;
+    final arguments = ModalRoute.of(context)!.settings.arguments;
     final testCase = arguments is TestCase ? arguments : this.testCase;
 
     if (testCase == null) {
@@ -36,13 +41,18 @@ class EditTestCaseScreenConnector extends StatelessWidget {
 
     return StoreConnector<AppState, EditTestCaseScreenViewModel>(
       vm: () => Factory(this),
-      builder: (context, vm) =>
-          EditTestCaseScreen(
-            scenario: vm.scenario,
-            userModel: vm.userModel,
-            testCase: testCase,
-            updateTestCase: vm.updateTestCase,
-          ),
+      builder: (context, vm) => EditTestCaseScreen(
+        scenario: vm.scenario,
+        userModel: vm.userModel,
+        testCase: testCase,
+        updateTestCase: vm.updateTestCase,
+        addComment: vm.addComment,
+        statusUpdate: vm.statusUpdate,
+        statusChangeList: vm.statusChangeList,
+        commentList: vm.commentList,
+        getCommentList: vm.getCommentList,
+        statusUpdateList: vm.statusUpdateList,
+      ),
     );
   }
 }

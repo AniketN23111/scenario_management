@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:scenario_management/custom_widgets/add_scenario_form/add_scenario_form_connector.dart';
 import '../../constants/role_based_theme.dart';
 import '../../models/user_model.dart';
 import '../../models/scenario.dart';
 import '../../route_names/route_names.dart';
+import '../test_case_details/add_scenario_form/add_scenario_form_connector.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isLoading;
@@ -55,10 +55,19 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         title: Text('Home - ${widget.userModel.designation ?? 'User'}'),
         backgroundColor: roleColors[widget.userModel.designation ?? 'Tester'],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              widget.signOut();
+              Navigator.pushNamed(context, RoutesName.loginScreen);
+            },
+          ),
+        ],
         elevation: 0,
         centerTitle: true,
       ),
-      body:  Padding(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,15 +88,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index) {
                   final project = widget.projects[index];
                   final projectId = project['id'] ?? 'Unknown ID';
-                  final projectName =
-                      project['name'] ?? 'Unnamed Project';
+                  final projectName = project['name'] ?? 'Unnamed Project';
 
                   return ExpansionTile(
                     title: Text(
                       projectName,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
-                    initiallyExpanded: _expandedStates[projectId] ?? false, // Maintain expanded state
+                    initiallyExpanded: _expandedStates[projectId] ?? false,
+                    // Maintain expanded state
                     onExpansionChanged: (expanded) async {
                       setState(() {
                         _expandedStates[projectId] = expanded;
@@ -96,19 +105,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Fetch scenarios only if expanded and not already loaded
                       if (expanded &&
                           (widget.projectScenarios[projectId] == null ||
-                              widget.projectScenarios[projectId]!
-                                  .isEmpty)) {
+                              widget.projectScenarios[projectId]!.isEmpty)) {
                         widget.fetchScenariosByProject(projectId);
                       }
                     },
                     children: [
                       if (widget.projectScenarios[projectId]?.isEmpty ?? true)
                         const ListTile(
-                          title: Text('No scenarios available for this project'),
+                          title:
+                              Text('No scenarios available for this project'),
                         )
                       else
-                        ...widget.projectScenarios[projectId]!
-                            .map((scenario) {
+                        ...widget.projectScenarios[projectId]!.map((scenario) {
                           return Card(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -126,9 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               subtitle: Text(
                                 'Scenario description: ${scenario.description}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium,
+                                style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               trailing: const Text(
                                 'Add Test Case',
@@ -148,52 +154,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => const AddScenarioConnector(),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                backgroundColor: Colors.blueAccent,
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-              ),
-              child: const Text(
-                'Add Scenario',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                widget.signOut();
-                Navigator.pushNamed(context, RoutesName.loginScreen);
-              },
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                backgroundColor: Colors.redAccent,
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-              ),
-              child: const Text(
-                'Log Out',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => const AddScenarioConnector(),
+          );
+        },
+        backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.add),
       ),
     );
   }

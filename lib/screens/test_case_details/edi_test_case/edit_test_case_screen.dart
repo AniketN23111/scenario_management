@@ -1,7 +1,16 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:scenario_management/custom_widgets/custom_text_form_field.dart';
 import 'package:scenario_management/models/scenario.dart';
+import 'package:scenario_management/models/status_change_log.dart';
+import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/add_comment_field.dart';
+import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/comments_section.dart';
+import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/status_changes_section.dart';
+import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/status_dropdown.dart';
 import '../../../constants/role_based_theme.dart';
-import '../../../firebase/firestore_services.dart';
+import '../../../models/comments.dart';
 import '../../../models/test_cases.dart';
 import '../../../models/user_model.dart';
 
@@ -11,63 +20,71 @@ class EditTestCaseScreen extends StatefulWidget {
   final Scenario scenario;
   final void Function(Scenario scenario, TestCase updatedTestCase)
       updateTestCase;
+  final void Function(String testCaseId, Map<String, dynamic> commentData)
+      addComment;
+  final void Function(String testCaseId, Map<String, dynamic> statusChangeData)
+      statusUpdate;
+  final void Function(String testCaseId) getCommentList;
+  final void Function(String testCaseId) statusUpdateList;
+  final List<StatusChange> statusChangeList;
+  final List<Comments> commentList;
 
   const EditTestCaseScreen(
       {super.key,
       required this.testCase,
       required this.scenario,
       required this.userModel,
-      required this.updateTestCase});
+      required this.updateTestCase,
+      required this.addComment,
+      required this.statusUpdate,
+      required this.statusChangeList,
+      required this.commentList,
+      required this.getCommentList,
+      required this.statusUpdateList});
 
   @override
   _EditTestCaseScreenState createState() => _EditTestCaseScreenState();
 }
 
 class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
-  final FirestoreService firestoreService = FirestoreService();
-
   // Text controllers to edit test case fields
   late TextEditingController _nameController;
   late TextEditingController _bugIdController;
   late TextEditingController _descriptionController;
-  late TextEditingController _commentsController;
   String? _status;
   String? _assignedUserName;
-  //Future<List<String>>? _usersFuture;
-  String? _userDesignation;
+  final TextEditingController _commentController = TextEditingController();
+  Future<List<Comments>> list = Future.value([]);
 
   @override
   void initState() {
     super.initState();
-    // Initialize the controllers with current test case data
     _nameController = TextEditingController(text: widget.testCase.name);
     _bugIdController = TextEditingController(text: widget.testCase.bugId);
     _descriptionController =
         TextEditingController(text: widget.testCase.description);
-    _commentsController = TextEditingController(text: widget.testCase.comments);
     _status = widget.testCase.status;
     _assignedUserName = widget.testCase.assignedUsers;
-    //_usersFuture = firestoreService.getUserNames();
-    _userDesignation = widget.userModel.designation;
+    fetchInitComment();
+  }
+  Future<void> fetchInitComment() async {
+    widget.getCommentList(widget.testCase.id!);
+    widget.statusUpdateList(widget.testCase.id!);
   }
 
-  @override
-  void dispose() {
-    // Dispose controllers to avoid memory leaks
-    _nameController.dispose();
-    _bugIdController.dispose();
-    _descriptionController.dispose();
-    _commentsController.dispose();
-    super.dispose();
-  }
-
+  ///After submit Form
   Future<void> _submitTestCaseForm() async {
     // Check if the form is valid before submitting
     if (_nameController.text.isNotEmpty &&
         _bugIdController.text.isNotEmpty &&
         _descriptionController.text.isNotEmpty &&
-        //_commentsController.text.isNotEmpty &&
         _status != null) {
+      // Ask the user if they want to update the status
+      if (_status != widget.testCase.status) {
+        bool updateStatusConfirmed = await _showUpdateStatusDialog();
+        if (!updateStatusConfirmed) return; // If user cancels, don't proceed
+      }
+
       // Create the updated test case object
       TestCase updatedTestCase = TestCase(
         id: widget.testCase.id,
@@ -76,13 +93,19 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
         bugId: _bugIdController.text,
         status: _status!,
         description: _descriptionController.text,
-        comments: _commentsController.text,
         attachment: widget.testCase.attachment,
         scenarioId: widget.testCase.scenarioId,
         assignedBy: widget.testCase.assignedBy,
         assignedUsers: _assignedUserName ?? widget.testCase.assignedUsers,
       );
+
+      // Update Test Cases
       widget.updateTestCase(widget.scenario, updatedTestCase);
+
+      // If status was updated, store the status change in the new collection
+      if (_status != widget.testCase.status) {
+        await _storeStatusChange(updatedTestCase);
+      }
 
       // Show a success message and navigate back
       ScaffoldMessenger.of(context).showSnackBar(
@@ -97,118 +120,154 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
     }
   }
 
+  Future<void> _addComment() async {
+    if (_commentController.text.isNotEmpty) {
+      final commentData = {
+        'id': widget.testCase.id,
+        'text': _commentController.text,
+        'createdBy': widget.userModel.name,
+        'createdAt': FieldValue.serverTimestamp(),
+      };
+      widget.addComment(widget.testCase.id!, commentData);
+      _commentController.clear();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Comment cannot be empty')),
+      );
+    }
+  }
+
+  Future<bool> _showUpdateStatusDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Update Status'),
+              content: const Text(
+                  'Do you want to update the status of this test case?'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false); // Cancel the update
+                  },
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true); // Confirm the update
+                  },
+                  child: const Text('Update'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false; // If dialog is dismissed, return false by default
+  }
+
+// Method to store the status change in a new Firestore collection
+  Future<void> _storeStatusChange(TestCase updatedTestCase) async {
+    // Create a new document in the "status_updates" collection
+    final statusChangeData = {
+      'status': updatedTestCase.status,
+      'testCaseId': updatedTestCase.id,
+      'scenarioId': widget.scenario.id,
+      'createdBy': widget.userModel.name,
+      'timestamp': FieldValue.serverTimestamp(),
+    };
+
+    try {
+      widget.statusUpdate(widget.testCase.id!, statusChangeData);
+      print('Status update stored successfully');
+    } catch (e) {
+      print('Error storing status update: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: roleColors[widget.userModel.designation ?? 'Tester'],
-          title: Text('Edit Test Case: ${widget.testCase.name}')),
+        backgroundColor: roleColors[widget.userModel.designation ?? 'Tester'],
+        title: Text('Edit Test Case: ${widget.testCase.name}'),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Editing ${widget.testCase.name}',
-                  style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 16),
-
-              // Test Case Name
-              TextFormField(
+              // Test Case Name (Form Field)
+              buildTextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Test Case Name'),
+                label: 'Test Case Name',
+                hintText: 'Enter Test Case Name',
               ),
               const SizedBox(height: 8),
 
-              // Bug ID
-              TextFormField(
+              // Bug ID (Form Field)
+              buildTextFormField(
                 controller: _bugIdController,
-                decoration: const InputDecoration(labelText: 'Bug ID'),
+                label: 'Bug ID',
+                hintText: 'Enter Bug ID',
               ),
               const SizedBox(height: 8),
 
-              // Description
-              TextFormField(
+              // Description (Form Field)
+              buildTextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
+                label: 'Description',
+                hintText: 'Enter Description',
                 maxLines: 4,
               ),
               const SizedBox(height: 8),
 
-              // Comments
-              TextFormField(
-                controller: _commentsController,
-                decoration: const InputDecoration(labelText: 'Comments'),
-                maxLines: 3,
+              // Status Dropdown (Form Field)
+              //_buildStatusDropdown(),
+              StatusDropdown(
+                status: _status,
+                userDesignation: widget.userModel.designation!,
+                onStatusChanged: (newStatus) {
+                  setState(() {
+                    _status = newStatus;
+                  });
+                },
               ),
               const SizedBox(height: 8),
 
-              // Status (Dropdown)
-              DropdownButtonFormField<String>(
-                value: _status != null &&
-                        ['Passed', 'Failed', 'In-Review', 'Completed']
-                            .contains(_status)
-                    ? _status
-                    : null,
-                decoration: const InputDecoration(labelText: 'Status'),
-                items: ['Passed', 'Failed', 'In-Review', 'Completed'].map(
-                  (status) {
-                    bool isEnabled = _userDesignation != 'Junior Tester' ||
-                        status != 'Completed';
-                    return DropdownMenuItem(
-                      value: status,
-                      enabled: isEnabled,
-                      child: Text(status,
-                          style: TextStyle(
-                              color: isEnabled ? Colors.black : Colors.grey)),
-                    );
-                  },
-                ).toList(),
-                onChanged: (value) {
-                  if (_userDesignation != 'Junior Tester' ||
-                      value != 'Completed') {
-                    setState(() => _status = value);
-                  }
-                },
-                hint: Text(_status ?? 'Select Status'),
-                validator: (value) =>
-                    value == null ? 'Please select a status' : null,
+              ExpansionTile(
+                title: const Text('Chat '),
+                leading: const Icon(Icons.chat),
+                children: [
+                 // _buildCommentsSection(),
+                  CommentsSection(
+                    commentList: widget.commentList,
+                    userModel: widget.userModel,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Add Comment Field
+                  //_buildAddCommentField(),
+                  AddCommentField(
+                    controller: _commentController,
+                    onAddComment: _addComment,
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
-              const SizedBox(height: 8),
-              /*FutureBuilder<List<String>>(
-                future: _usersFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-                  if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  }
-                  final users = snapshot.data ?? [];
 
-                  // Check if the assigned user is in the list, if so, set that value
-                  String? defaultAssignedUser = users.contains(_assignedUserName) ? _assignedUserName : null;
-
-                  return DropdownButtonFormField<String>(
-                    value: defaultAssignedUser,
-                    decoration: const InputDecoration(labelText: 'Assign User'),
-                    items: users
-                        .map((user) => DropdownMenuItem<String>(
-                      value: user,
-                      child: Text(user),
-                    ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _assignedUserName = value;
-                      });
-                    },
-                    hint: const Text('Select User'),
-                    validator: (value) => value == null ? 'Please select a user' : null,
-                  );
-                },
-              ),*/
               const SizedBox(height: 16),
+              // Expanded Status Changes Section
+              ExpansionTile(
+                title: const Text('Status Changes'),
+                leading: const Icon(Icons.update),
+                children: [
+                 // _buildStatusChangesSection(),
+                  StatusChangesSection(
+                    statusChangeList: widget.statusChangeList,
+                  ),
+                ],
+              ),
 
               // Save Button
               ElevatedButton(
@@ -231,5 +290,13 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
         ),
       ),
     );
+  }
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _bugIdController.dispose();
+    _descriptionController.dispose();
+    _commentController.dispose();
+    super.dispose();
   }
 }

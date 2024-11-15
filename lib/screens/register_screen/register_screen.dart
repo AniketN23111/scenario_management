@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:scenario_management/route_names/route_names.dart';
 import '../../TypeDef/type_def.dart';
 
 /// Register Screen
 class RegisterScreen extends StatefulWidget {
   final bool isLoading;
   final RegisterWithEmailAndDesignationTypeDef
-      registerWithEmailAndDesignationTypeDef;
+  registerWithEmailAndDesignationTypeDef;
 
   const RegisterScreen({
     super.key,
@@ -23,8 +25,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
 
-  List<String> designations = ['Junior Tester', 'Tester Lead'];
-  String? selectedDesignation;
+  List<Map<String, String>> designations = [];
+  Map<String, String>? selectedDesignation;
+  bool _isSubmitting = false; // Loading state
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDesignations();
+  }
+
+  void _fetchDesignations() async {
+    try {
+      QuerySnapshot snapshot =
+      await FirebaseFirestore.instance.collection('role').get();
+      setState(() {
+        designations = snapshot.docs.map((doc) {
+          return {
+            'id': doc['id'] as String,
+            'name': doc['name'] as String,
+          };
+        }).toList();
+      });
+    } catch (e) {
+      print("Error fetching roles: $e");
+    }
+  }
+
+  Future<void> _submit() async {
+    if (!_form.currentState!.validate()) return;
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    // Call the registration function
+     widget.registerWithEmailAndDesignationTypeDef(
+      _emailController.text,
+      _passwordController.text,
+      selectedDesignation?['id'] ?? '',
+      _nameController.text,
+    );
+
+    // Simulate Redux state update time
+    await Future.delayed(const Duration(seconds: 1));
+
+    setState(() {
+      _isSubmitting = false;
+    });
+
+    // Navigate to the login screen upon success
+    Navigator.pushNamed(context, RoutesName.loginScreen);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +95,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 keyboardType: TextInputType.name,
                 controller: _nameController,
                 validator: (text) =>
-                    text == null || text.isEmpty ? "Name is Empty" : null,
+                text == null || text.isEmpty ? "Name is Empty" : null,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -60,7 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 keyboardType: TextInputType.emailAddress,
                 controller: _emailController,
                 validator: (text) =>
-                    text == null || text.isEmpty ? "Email is Empty" : null,
+                text == null || text.isEmpty ? "Email is Empty" : null,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -78,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _passwordController,
                 obscureText: true,
                 validator: (text) =>
-                    text == null || text.isEmpty ? "Password is Empty" : null,
+                text == null || text.isEmpty ? "Password is Empty" : null,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -91,14 +143,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              DropdownButtonFormField<String>(
+              designations.isEmpty
+                  ? const CircularProgressIndicator()
+                  : DropdownButtonFormField<Map<String, String>>(
                 value: selectedDesignation,
-                items: designations
-                    .map((designation) => DropdownMenuItem(
-                          value: designation,
-                          child: Text(designation),
-                        ))
-                    .toList(),
+                items: designations.map((designation) {
+                  return DropdownMenuItem<Map<String, String>>(
+                    value: designation,
+                    child: Text(designation['name']!),
+                  );
+                }).toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedDesignation = value;
@@ -115,17 +169,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 validator: (value) =>
-                    value == null ? 'Please select a designation' : null,
+                value == null ? 'Please select a designation' : null,
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  widget.registerWithEmailAndDesignationTypeDef(
-                      _emailController.text,
-                      _passwordController.text,
-                      selectedDesignation.toString(),
-                      _nameController.text);
-                },
+              _isSubmitting
+                  ? const CircularProgressIndicator() // Loading indicator during submission
+                  : ElevatedButton(
+                onPressed: _submit,
                 child: const Text('Submit'),
               ),
             ],

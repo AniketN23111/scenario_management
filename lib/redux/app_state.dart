@@ -1,4 +1,7 @@
+import 'package:scenario_management/models/comments.dart';
+
 import '../models/scenario.dart';
+import '../models/status_change_log.dart';
 import '../models/test_cases.dart';
 import '../models/user_model.dart';
 
@@ -10,7 +13,9 @@ class AppState {
   final Scenario scenario;
   final List<Map<String, dynamic>> projects;
   final Map<String, List<Scenario>> projectScenarios;
-  final Future<List<TestCase>> listTestCase;
+  final List<TestCase> listTestCase;
+  final List<StatusChange> statusChangeList;
+  final List<Comments> commentList;
 
   AppState(
       {required this.loading,
@@ -19,7 +24,9 @@ class AppState {
       required this.scenario,
       required this.projects,
       required this.projectScenarios,
-      required this.listTestCase});
+      required this.listTestCase,
+      required this.statusChangeList,
+      required this.commentList});
 
   AppState copy(
           {bool? loading,
@@ -28,7 +35,9 @@ class AppState {
           Scenario? scenario,
           List<Map<String, dynamic>>? projects,
           Map<String, List<Scenario>>? projectScenarios,
-          Future<List<TestCase>>? listTestCase}) =>
+            List<TestCase>? listTestCase,
+          List<StatusChange>? statusChangeList,
+          List<Comments>? commentList}) =>
       AppState(
           loading: loading ?? this.loading,
           userModel: userModel ?? this.userModel,
@@ -36,7 +45,9 @@ class AppState {
           scenario: scenario ?? this.scenario,
           projects: projects ?? this.projects,
           projectScenarios: projectScenarios ?? this.projectScenarios,
-          listTestCase: listTestCase ?? this.listTestCase);
+          listTestCase: listTestCase ?? this.listTestCase,
+          statusChangeList: statusChangeList ?? this.statusChangeList,
+          commentList: commentList ?? this.commentList);
 
   static AppState initState() => AppState(
       loading: false,
@@ -45,7 +56,9 @@ class AppState {
       scenario: Scenario.empty(),
       projects: [],
       projectScenarios: {},
-      listTestCase: Future.value([]));
+      listTestCase: [],
+      statusChangeList: [],
+      commentList: []);
 
   @override
   bool operator ==(Object other) =>
@@ -56,7 +69,9 @@ class AppState {
           testCase == other.testCase &&
           projects == other.projects &&
           projectScenarios == other.projectScenarios &&
-          listTestCase == other.listTestCase;
+          listTestCase == other.listTestCase &&
+          statusChangeList == other.statusChangeList &&
+          commentList == other.commentList;
 
   @override
   int get hashCode =>
@@ -65,5 +80,7 @@ class AppState {
       testCase.hashCode ^
       projects.hashCode ^
       projectScenarios.hashCode ^
-      listTestCase.hashCode;
+      listTestCase.hashCode ^
+      statusChangeList.hashCode ^
+      commentList.hashCode;
 }

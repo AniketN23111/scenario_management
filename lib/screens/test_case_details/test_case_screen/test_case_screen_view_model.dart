@@ -12,7 +12,7 @@ import '../../../redux/app_state.dart';
 class TestCaseScreenViewModel extends Vm {
   final Scenario scenario;
   final UserModel userModel;
-  final Future<List<TestCase>> listTestCase;
+  final List<TestCase> listTestCase;
   final void Function(Scenario scenario) getTestCaseByScenario;
 
   TestCaseScreenViewModel({

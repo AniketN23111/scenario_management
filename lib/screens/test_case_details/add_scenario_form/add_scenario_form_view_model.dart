@@ -1,11 +1,12 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:scenario_management/custom_widgets/add_scenario_form/add_scenario_form_connector.dart';
 import 'package:scenario_management/redux/actions/add_scenario_from/create_project_action.dart';
 import 'package:scenario_management/redux/actions/add_scenario_from/fetch_projects_action.dart';
 import 'package:scenario_management/redux/actions/home_screen/add_scenario_action.dart';
+import '../../../models/scenario.dart';
+import '../../../models/user_model.dart';
 import '../../../redux/app_state.dart';
-import '../../models/scenario.dart';
-import '../../models/user_model.dart';
+import 'add_scenario_form_connector.dart';
+
 
 ///Login Screen View Model
 class AddScenarioViewModel extends Vm {

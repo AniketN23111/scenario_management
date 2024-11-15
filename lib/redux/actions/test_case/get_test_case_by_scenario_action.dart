@@ -17,7 +17,7 @@ class GetTestCaseByScenarioAction extends ReduxAction<AppState> {
   Future<AppState?> reduce() async {
     try {
       final firestoreService = FirestoreService();
-      Future<List<TestCase>> list = firestoreService.getTestCasesByScenario(
+      List<TestCase> list = await firestoreService.getTestCasesByScenario(
           scenario.projectID, scenario.id);
       return state.copy(listTestCase: list);
     } catch (e) {

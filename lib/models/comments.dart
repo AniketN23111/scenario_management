@@ -1,38 +1,41 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Comment {
+class Comments {
   final String id;
-  final String commentText;
-  final String userId;
-  final String userName;
-  final Timestamp createdAt;
+  final String testCaseId; // ID of the associated test case
+  final String content; // The comment text
+  final String commentedBy; // Name of the user who made the comment
+  final DateTime? timestamp; // Timestamp when the comment was created
 
-  Comment({
+  Comments({
     required this.id,
-    required this.commentText,
-    required this.userId,
-    required this.userName,
-    required this.createdAt,
+    required this.testCaseId,
+    required this.content,
+    required this.commentedBy,
+    required this.timestamp,
   });
 
-  // From Firestore
-  factory Comment.fromJson(Map<String, dynamic> json, String id) {
-    return Comment(
-      id: id,
-      commentText: json['commentText'],
-      userId: json['userId'],
-      userName: json['userName'],
-      createdAt: json['createdAt'],
+  // Factory constructor to create a Comment from Firestore document data
+  factory Comments.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Comments(
+      id: doc.id,
+      testCaseId: data['id'] ?? '',
+      content: data['text'] ?? '',
+      commentedBy: data['createdBy'] ?? '',
+      timestamp: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
+          : null,
     );
   }
 
-  // To Firestore
-  Map<String, dynamic> toJson() {
+  // Method to convert a Comment instance to a Map for Firestore
+  Map<String, dynamic> toMap() {
     return {
-      'commentText': commentText,
-      'userId': userId,
-      'userName': userName,
-      'createdAt': createdAt,
+      'testCaseId': testCaseId,
+      'content': content,
+      'commentedBy': commentedBy,
+      'timestamp': timestamp,
     };
   }
 }

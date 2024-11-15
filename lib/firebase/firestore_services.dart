@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/comments.dart';
 import '../models/scenario.dart';
+import '../models/status_change_log.dart';
 import '../models/test_cases.dart';
 
 class FirestoreService {
@@ -76,7 +77,6 @@ class FirestoreService {
           .set(scenario.toMap()); // Use set() to specify the document ID
       return scenario.id; // Return the predefined scenario ID
     } else {
-
       return scenario.id; // Return existing scenario ID if it already exists
     }
   }
@@ -197,7 +197,7 @@ class FirestoreService {
 
   /// Update a test case under a specific scenario within a project
   Future<void> updateTestCase(
-      String testCaseId, Scenario scenario,TestCase updatedTestCase) async {
+      String testCaseId, Scenario scenario, TestCase updatedTestCase) async {
     final testCaseRef = FirebaseFirestore.instance
         .collection('projects')
         .doc(scenario.projectID)
@@ -226,55 +226,44 @@ class FirestoreService {
     }
   }
 
-  ///Add Comments to the test Cases
-  Future<void> addComment(String testCaseId, String commentText, String userId,
-      String userName) async {
-    if (commentText.isNotEmpty) {
-      try {
-        final commentRef = FirebaseFirestore.instance
-            .collection('projects')
-            .doc('projectId') // Replace with actual projectId
-            .collection('scenarios')
-            .doc('scenarioId') // Replace with actual scenarioId
-            .collection('testCases')
-            .doc(testCaseId)
-            .collection('comments')
-            .doc(); // Auto-generate commentId
-
-        Comment newComment = Comment(
-          id: commentRef.id,
-          commentText: commentText,
-          userId: userId,
-          userName: userName,
-          createdAt: Timestamp.now(),
-        );
-
-        await commentRef.set(newComment.toJson());
-      } catch (e) {
-       return;
-      }
+  /// Method to add status change to Firestore
+  Future<void> addStatusChange(Map<String, dynamic> statusChangeData) async {
+    try {
+      // Create a new document in the "status_updates" collection
+      await _db.collection('status_updates').add(statusChangeData);
+    } catch (e) {
+      rethrow; // You can handle the error here
     }
   }
 
-  ///Get Comments
-  Future<List<Comment>> getComments(String testCaseId) async {
-    try {
-      final commentsSnapshot = await FirebaseFirestore.instance
-          .collection('projects')
-          .doc('projectId') // Replace with actual projectId
-          .collection('scenarios')
-          .doc('scenarioId') // Replace with actual scenarioId
-          .collection('testCases')
-          .doc(testCaseId)
-          .collection('comments')
-          .orderBy('createdAt', descending: true)
-          .get();
+  Future<List<StatusChange>> fetchStatusChangeHistory(String testCaseId) async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('status_updates')
+        .where('testCaseId', isEqualTo: testCaseId)
+        .orderBy('timestamp', descending: true)
+        .get();
 
-      return commentsSnapshot.docs.map((doc) {
-        return Comment.fromJson(doc.data(), doc.id);
-      }).toList();
-    } catch (e) {
-      return [];
-    }
+    return querySnapshot.docs
+        .map((doc) => StatusChange.fromFirestore(doc))
+        .toList();
+  }
+
+  ///Add Comments to the test Cases
+  Future<void> addComment(String testCaseId, Map<String, dynamic> commentData) {
+    return _db.collection('comments').add(commentData);
+  }
+
+  ///Get Comments
+  Future<List<Comments>> fetchComments(String testCaseId) async {
+    final snapshot = await _db
+        .collection('comments')
+        .where('id', isEqualTo: testCaseId)
+        .orderBy('createdAt', descending: true)
+        .get();
+    final list =
+        snapshot.docs.map((doc) => Comments.fromFirestore(doc)).toList();
+    snapshot.docs.map((e) => print(e.id));
+    print(list.first.testCaseId);
+    return list;
   }
 }
