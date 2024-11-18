@@ -27,7 +27,6 @@ class _AddTestCaseDialogState extends State<AddTestCaseDialog> {
   final GlobalKey<FormState> _testCaseFormKey = GlobalKey<FormState>();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _bugIdController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _commentsController = TextEditingController();
   String? _status;
@@ -50,7 +49,6 @@ class _AddTestCaseDialogState extends State<AddTestCaseDialog> {
       final testCase = TestCase(
         id: _idController.text,
         name: _nameController.text,
-        bugId: _bugIdController.text,
         status: _status ?? 'In-Review',
         description: _descriptionController.text,
         comments: _commentsController.text,
@@ -101,11 +99,6 @@ class _AddTestCaseDialogState extends State<AddTestCaseDialog> {
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Test Case Name'),
                 validator: (value) => value!.isEmpty ? 'Please enter a test case name' : null,
-              ),
-              TextFormField(
-                controller: _bugIdController,
-                decoration: const InputDecoration(labelText: 'Bug ID'),
-                validator: (value) => value!.isEmpty ? 'Please enter a Bug ID' : null,
               ),
               TextFormField(
                 controller: _descriptionController,

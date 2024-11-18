@@ -10,8 +10,8 @@ class CommentsSection extends StatelessWidget {
   const CommentsSection({
     required this.commentList,
     required this.userModel,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

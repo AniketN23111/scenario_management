@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:scenario_management/constants/enums.dart';
 import 'package:scenario_management/custom_widgets/custom_text_form_field.dart';
 import 'package:scenario_management/models/scenario.dart';
@@ -12,7 +10,6 @@ import 'package:scenario_management/screens/test_case_details/edi_test_case/widg
 import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/comments_section.dart';
 import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/status_changes_section.dart';
 import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/status_dropdown.dart';
-import '../../../constants/role_based_theme.dart';
 import '../../../models/comments.dart';
 import '../../../models/test_cases.dart';
 import '../../../models/user_model.dart';
@@ -54,7 +51,6 @@ class EditTestCaseScreen extends StatefulWidget {
 class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
   // Text controllers to edit test case fields
   late TextEditingController _nameController;
-  late TextEditingController _bugIdController;
   late TextEditingController _descriptionController;
   String? _status;
   String? _assignedUserName;
@@ -65,7 +61,6 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.testCase.name);
-    _bugIdController = TextEditingController(text: widget.testCase.bugId);
     _descriptionController =
         TextEditingController(text: widget.testCase.description);
     _status = widget.testCase.status;
@@ -82,7 +77,6 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
   Future<void> _submitTestCaseForm() async {
     // Check if the form is valid before submitting
     if (_nameController.text.isNotEmpty &&
-        _bugIdController.text.isNotEmpty &&
         _descriptionController.text.isNotEmpty &&
         _status != null) {
       // Ask the user if they want to update the status
@@ -96,7 +90,6 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
         id: widget.testCase.id,
         // Keep the same ID
         name: _nameController.text,
-        bugId: _bugIdController.text,
         status: _status!,
         description: _descriptionController.text,
         attachment: widget.testCase.attachment,
@@ -184,7 +177,6 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
 
     try {
       widget.statusUpdate(widget.testCase.id!, statusChangeData);
-      print('Status update stored successfully');
     } catch (e) {
       print('Error storing status update: $e');
     }
@@ -194,8 +186,8 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: roleColors[widget.userModel.designation ?? 'Tester'],
-        title: Text('Edit Test Case: ${widget.testCase.name}'),
+        title: Text(
+            'Edit Test Case: ${widget.testCase.name}(${widget.testCase.id})'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -212,15 +204,6 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
               ),
               const SizedBox(height: 8),
 
-              // Bug ID (Form Field)
-              buildTextFormField(
-                enabled: false,
-                controller: _bugIdController,
-                label: 'Bug ID',
-                hintText: 'Enter Bug ID',
-              ),
-              const SizedBox(height: 8),
-
               // Description (Form Field)
               buildTextFormField(
                 enabled: true,
@@ -232,7 +215,6 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
               const SizedBox(height: 8),
 
               // Status Dropdown (Form Field)
-              //_buildStatusDropdown(),
               StatusDropdown(
                 status: _status,
                 userRole: widget.userRole,
@@ -244,36 +226,44 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
               ),
               const SizedBox(height: 8),
 
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ExpansionTile(
-                  title: const Text('Chat '),
-                  leading: const Icon(Icons.chat),
-                  children: [
-                    // _buildCommentsSection(),
-                    CommentsSection(
-                      commentList: widget.commentList,
-                      userModel: widget.userModel,
-                    ),
-                    const SizedBox(height: 16),
+              ExpansionTile(
+                shape: RoundedRectangleBorder(
+                    side: const BorderSide(color: Colors.transparent),
+                    borderRadius: BorderRadius.circular(12)),
+                backgroundColor: Colors.grey[300],
+                collapsedBackgroundColor: Colors.grey[300],
+                collapsedShape: RoundedRectangleBorder(
+                    side: const BorderSide(color: Colors.transparent),
+                    borderRadius: BorderRadius.circular(12)),
+                title: const Text('Chat '),
+                leading: const Icon(Icons.chat),
+                children: [
+                  CommentsSection(
+                    commentList: widget.commentList,
+                    userModel: widget.userModel,
+                  ),
+                  const SizedBox(height: 16),
 
-                    // Add Comment Field
-                    //_buildAddCommentField(),
-                    AddCommentField(
-                      controller: _commentController,
-                      onAddComment: _addComment,
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                  // Add Comment Field
+                  AddCommentField(
+                    controller: _commentController,
+                    onAddComment: _addComment,
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
               const SizedBox(height: 16),
               // Expanded Status Changes Section
               if (widget.userRole == UserRole.testerLead)
                 ExpansionTile(
+                  shape: RoundedRectangleBorder(
+                      side: const BorderSide(color: Colors.transparent),
+                      borderRadius: BorderRadius.circular(12)),
+                  backgroundColor: Colors.grey[300],
+                  collapsedBackgroundColor: Colors.grey[300],
+                  collapsedShape: RoundedRectangleBorder(
+                      side: const BorderSide(color: Colors.transparent),
+                      borderRadius: BorderRadius.circular(12)),
                   title: const Text('Status Changes'),
                   leading: const Icon(Icons.update),
                   children: [
@@ -315,7 +305,6 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _bugIdController.dispose();
     _descriptionController.dispose();
     _commentController.dispose();
     super.dispose();

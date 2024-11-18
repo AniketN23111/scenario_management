@@ -232,7 +232,6 @@ class FirestoreService {
           id: doc.id,
           name: data['name'] ?? '',
           scenarioId: scenarioId,
-          bugId: data['bugId'] ?? '',
           description: data['description'] ?? '',
           comments: data['comments'] ?? '',
           attachment: data['attachment'] ?? '',
@@ -255,7 +254,6 @@ class FirestoreService {
 
     await testCaseRef.update({
       'name': updatedTestCase.name,
-      'bugId': updatedTestCase.bugId,
       'description': updatedTestCase.description,
       'comments': updatedTestCase.comments,
       'status': updatedTestCase.status,

@@ -58,17 +58,16 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     // Listen for changes to theme and rebuild widget tree when it changes
-    themeManager.addListener(() {
-      setState(() {});
+    themeManager.addListener(themeMangerListener) ;
+  }
+  void themeMangerListener(){
+    setState(() {
     });
   }
 
   @override
   void dispose() {
-    // Remove the listener when disposed to avoid memory leaks
-    themeManager.removeListener(() {
-      setState(() {});
-    });
+    themeManager.removeListener(themeMangerListener);
     super.dispose();
   }
 

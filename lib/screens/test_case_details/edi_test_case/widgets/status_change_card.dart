@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:scenario_management/constants/get_status_color.dart';
-import 'package:scenario_management/constants/get_status_icon.dart';
+import '../../../../helper/get_status_icon.dart';
+import '../../../../helper/status_color.dart';
 import '../../../../models/status_change_log.dart';
 
 class StatusChangeCard extends StatelessWidget {
@@ -9,8 +9,8 @@ class StatusChangeCard extends StatelessWidget {
 
   const StatusChangeCard({
     required this.statusChange,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

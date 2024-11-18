@@ -76,163 +76,161 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.grey[800],
-        centerTitle: true,
-      ),
-      body: Form(
-        key: _form,
-        child: SingleChildScrollView(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  Text(
-                    'Register',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.grey[800],
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  // Name Field
-                  TextFormField(
-                    keyboardType: TextInputType.name,
-                    controller: _nameController,
-                    validator: (text) =>
-                        text == null || text.isEmpty ? "Name is Empty" : null,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.all(15),
-                      hintText: 'Name',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide.none,
+      body: SafeArea(
+        child: Form(
+          key: _form,
+          child: SingleChildScrollView(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 20),
+                    Text(
+                      'Register',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.bold,
                       ),
-                      prefixIcon: const Icon(Icons.format_color_text_rounded,
-                          color: Colors.grey),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Email Field
-                  TextFormField(
-                    keyboardType: TextInputType.emailAddress,
-                    controller: _emailController,
-                    validator: (text) =>
-                        text == null || text.isEmpty ? "Email is Empty" : null,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.all(15),
-                      hintText: 'Email',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: const Icon(Icons.email, color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Password Field
-                  TextFormField(
-                    keyboardType: TextInputType.text,
-                    controller: _passwordController,
-                    obscureText: true,
-                    validator: (text) =>
-                        text == null || text.isEmpty ? "Password is Empty" : null,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.all(15),
-                      hintText: 'Password',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: const Icon(Icons.lock, color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Confirm Password Field
-                  TextFormField(
-                    keyboardType: TextInputType.text,
-                    controller: _confirmPasswordController,
-                    obscureText: true,
-                    validator: (text) {
-                      if (text == null || text.isEmpty) {
-                        return "Confirm Password is Empty";
-                      } else if (text != _passwordController.text) {
-                        return "Passwords do not match";
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.all(15),
-                      hintText: 'Confirm Password',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: const Icon(Icons.lock, color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Dropdown for Designation
-                  designations.isEmpty
-                      ? const CircularProgressIndicator()
-                      : DropdownButtonFormField<Map<String, String>>(
-                          value: selectedDesignation,
-                          items: designations.map((designation) {
-                            return DropdownMenuItem<Map<String, String>>(
-                              value: designation,
-                              child: Text(designation['name']!),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedDesignation = value;
-                            });
-                          },
-                          hint: const Text('Select Designation'),
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.all(15),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide.none,
-                            ),
-                            prefixIcon: const Icon(Icons.accessibility_sharp,
-                                color: Colors.grey),
-                          ),
-                          validator: (value) => value == null
-                              ? 'Please select a designation'
-                              : null,
+                    // Name Field
+                    TextFormField(
+                      keyboardType: TextInputType.name,
+                      controller: _nameController,
+                      validator: (text) =>
+                          text == null || text.isEmpty ? "Name is Empty" : null,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.all(15),
+                        hintText: 'Name',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
                         ),
-                  const SizedBox(height: 20),
-                  // Submit Button
-                  _isSubmitting
-                      ? const CircularProgressIndicator()
-                      : ElevatedButton(
-                          onPressed: _submit,
-                          child: const Text('Submit'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Colors.greenAccent, // Green Accent Button
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 40),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                        prefixIcon: const Icon(Icons.format_color_text_rounded,
+                            color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Email Field
+                    TextFormField(
+                      keyboardType: TextInputType.emailAddress,
+                      controller: _emailController,
+                      validator: (text) =>
+                          text == null || text.isEmpty ? "Email is Empty" : null,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.all(15),
+                        hintText: 'Email',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: const Icon(Icons.email, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Password Field
+                    TextFormField(
+                      keyboardType: TextInputType.text,
+                      controller: _passwordController,
+                      obscureText: true,
+                      validator: (text) =>
+                          text == null || text.isEmpty ? "Password is Empty" : null,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.all(15),
+                        hintText: 'Password',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Confirm Password Field
+                    TextFormField(
+                      keyboardType: TextInputType.text,
+                      controller: _confirmPasswordController,
+                      obscureText: true,
+                      validator: (text) {
+                        if (text == null || text.isEmpty) {
+                          return "Confirm Password is Empty";
+                        } else if (text != _passwordController.text) {
+                          return "Passwords do not match";
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.all(15),
+                        hintText: 'Confirm Password',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Dropdown for Designation
+                    designations.isEmpty
+                        ? const CircularProgressIndicator()
+                        : DropdownButtonFormField<Map<String, String>>(
+                            value: selectedDesignation,
+                            items: designations.map((designation) {
+                              return DropdownMenuItem<Map<String, String>>(
+                                value: designation,
+                                child: Text(designation['name']!),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedDesignation = value;
+                              });
+                            },
+                            hint: const Text('Select Designation'),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.all(15),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide.none,
+                              ),
+                              prefixIcon: const Icon(Icons.accessibility_sharp,
+                                  color: Colors.grey),
+                            ),
+                            validator: (value) => value == null
+                                ? 'Please select a designation'
+                                : null,
+                          ),
+                    const SizedBox(height: 20),
+                    // Submit Button
+                    _isSubmitting
+                        ? const CircularProgressIndicator()
+                        : ElevatedButton(
+                            onPressed: _submit,
+                            child: const Text('Submit'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Colors.greenAccent, // Green Accent Button
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 15, horizontal: 40),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
                             ),
                           ),
-                        ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

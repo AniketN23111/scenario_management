@@ -22,7 +22,7 @@ class CommentBubble extends StatelessWidget {
       decoration: BoxDecoration(
         color: isCurrentUser
             ? Colors.blueAccent.withOpacity(0.8)
-            : Colors.grey.shade300,
+            : Colors.black38,
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(12),
           topRight: const Radius.circular(12),
@@ -36,13 +36,13 @@ class CommentBubble extends StatelessWidget {
           if (!isCurrentUser)
             Text(
               comment.commentedBy,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold,color: Colors.white),
             ),
           Text(
             comment.content,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
-              color: isCurrentUser ? Colors.white : Colors.black,
+              color:  Colors.white ,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -51,9 +51,9 @@ class CommentBubble extends StatelessWidget {
             DateFormat.yMd()
                 .add_jm()
                 .format(comment.timestamp ?? DateTime.now()),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 10,
-              color: isCurrentUser ? Colors.white : Colors.black54,
+              color:   Colors.white ,
             ),
           ),
         ],

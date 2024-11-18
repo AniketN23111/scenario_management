@@ -2,7 +2,6 @@ class TestCase {
   String? id;
   String? name;
   String? scenarioId;
-  String? bugId;
   String? description;
   String? comments;
   String? attachment;
@@ -14,7 +13,6 @@ class TestCase {
      this.id,
      this.name,
      this.scenarioId,
-     this.bugId,
      this.description,
      this.comments,
      this.attachment,
@@ -27,7 +25,6 @@ class TestCase {
         'id': id,
         'name': name,
         'scenarioId': scenarioId,
-        'bugId': bugId,
         'description': description,
         'comments': comments,
         'attachment': attachment,
@@ -40,7 +37,6 @@ class TestCase {
         id: map['id'] ?? '',
         name: map['name'] ?? '',
         scenarioId: map['scenarioId'] ?? '',
-        bugId: map['bugId'] ?? '',
         description: map['description'] ?? '',
         comments: map['comments'] ?? '',
         attachment: map['attachment'] ?? '',

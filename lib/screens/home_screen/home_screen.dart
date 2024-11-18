@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout,color: Colors.white,),
+            icon: const Icon(Icons.logout,),
             onPressed: () {
               widget.signOut();
               Navigator.pushNamed(context, RoutesName.loginScreen);
@@ -80,6 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                 // Image.network('https://dev.orderbookings.com/public/imagetest/c35f2b16-2ab8-4eeb-8ad7-4f2532c85bfe.jpg'),
                   const SizedBox(height: 20),
                   // Display projects and their scenarios using ExpansionTile
                   Expanded(
@@ -88,74 +89,76 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) {
                         final project = widget.projects[index];
                         final projectId = project['id'] ?? 'Unknown ID';
-                        final projectName =
-                            project['name'] ?? 'Unnamed Project';
+                        final projectName = project['name'] ?? 'Unnamed Project';
 
-                        return ExpansionTile(
-                          title: Text(
-                            projectName,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          initiallyExpanded:
-                              _expandedStates[projectId] ?? false,
-                          // Maintain expanded state
-                          onExpansionChanged: (expanded) async {
-                            setState(() {
-                              _expandedStates[projectId] = expanded;
-                            });
+                        // Check if the project is expanded
+                        final isExpanded = _expandedStates[projectId] ?? false;
 
-                            // Fetch scenarios only if expanded and not already loaded
-                            if (expanded &&
-                                (widget.projectScenarios[projectId] == null ||
-                                    widget.projectScenarios[projectId]!
-                                        .isEmpty)) {
-                              widget.fetchScenariosByProject(projectId);
-                            }
-                          },
+                        return Column(
                           children: [
-                            if (widget.projectScenarios[projectId]?.isEmpty ??
-                                true)
-                              const ListTile(
-                                title: Text(
-                                    'No scenarios available for this project'),
-                              )
-                            else
-                              ...widget.projectScenarios[projectId]!
-                                  .map((scenario) {
-                                return Card(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  shadowColor: Colors.blueGrey.withOpacity(0.2),
-                                  elevation: 3,
-                                  margin: const EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 16),
-                                  child: ListTile(
-                                    contentPadding: const EdgeInsets.all(10),
-                                    title: Text(
-                                      'Scenario Name: ${scenario.name}',
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    subtitle: Text(
-                                      'Scenario description: ${scenario.description}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
-                                    ),
-                                    trailing: const Text(
-                                      'Add Test Case',
-                                      style: TextStyle(color: Colors.blue),
-                                    ),
-                                    onTap: () {
-                                      widget.updateScenarioStore(scenario);
-                                      Navigator.pushNamed(
-                                          context, RoutesName.testCaseScreen,
-                                          arguments: scenario);
-                                    },
-                                  ),
-                                );
-                              }),
+                            ExpansionTile(
+                              shape: RoundedRectangleBorder(
+                                  side: const BorderSide(color: Colors.transparent),
+                                  borderRadius: BorderRadius.circular(12)),
+                              backgroundColor: Colors.grey[300],
+                              collapsedBackgroundColor: Colors.grey[300],
+                              collapsedShape:RoundedRectangleBorder(
+                                  side: const BorderSide(color: Colors.transparent),
+                                  borderRadius: BorderRadius.circular(12)),
+                              title: Text(
+                                projectName,
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                              initiallyExpanded: isExpanded,
+                              onExpansionChanged: (expanded) async {
+                                setState(() {
+                                  _expandedStates[projectId] = expanded;
+                                });
+
+                                // Fetch scenarios only if expanded and not already loaded
+                                if (expanded &&
+                                    (widget.projectScenarios[projectId] == null ||
+                                        widget.projectScenarios[projectId]!.isEmpty)) {
+                                  widget.fetchScenariosByProject(projectId);
+                                }
+                              },
+                              children: [
+                                if (widget.projectScenarios[projectId]?.isEmpty ?? true)
+                                  const ListTile(
+                                    title: Text('No scenarios available for this project'),
+                                  )
+                                else
+                                  ...widget.projectScenarios[projectId]!.map((scenario) {
+                                    return ListTile(
+                                      title: Text(
+                                        scenario.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        scenario.description,
+                                        style: Theme.of(context).textTheme.bodyMedium,
+                                      ),
+                                      trailing: const Text(
+                                        'View Test Cases',
+                                        style: TextStyle(color: Colors.blue,fontSize: 14),
+                                      ),
+                                      onTap: () {
+                                        widget.updateScenarioStore(scenario);
+                                        Navigator.pushNamed(
+                                          context,
+                                          RoutesName.testCaseScreen,
+                                          arguments: scenario,
+                                        );
+                                      },
+                                    );
+                                  }),
+                              ],
+                            ),
+                            // Add a gap after each project
+                            const SizedBox(height: 20),
                           ],
                         );
                       },

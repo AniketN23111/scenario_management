@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../constants/get_status_color.dart';
-import '../../../constants/get_status_icon.dart';
-import '../../../constants/role_based_theme.dart';
+import '../../../helper/get_status_icon.dart';
+import '../../../helper/status_color.dart';
 import '../../../models/scenario.dart';
 import '../../../models/test_cases.dart';
 import '../../../models/user_model.dart';
@@ -43,7 +42,6 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: roleColors[widget.userModel?.designation ?? 'Tester'],
         title: Text('${widget.scenario!.project} - ${widget.scenario!.name}'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(70),
@@ -60,6 +58,7 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
                       child: DropdownButton<String>(
                         style: const TextStyle(color: Colors.white),
                         value: selectedSearchField,
+                        dropdownColor: Colors.red,
                         items: const [
                           DropdownMenuItem(value: 'name', child: Text('Name')),
                           DropdownMenuItem(value: 'status', child: Text('Status')),
