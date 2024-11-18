@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../constants/get_status_color.dart';
+import '../../../constants/get_status_icon.dart';
 import '../../../constants/role_based_theme.dart';
 import '../../../models/scenario.dart';
 import '../../../models/test_cases.dart';
@@ -29,7 +31,7 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
   String? selectedAssignedUser;
   String searchQuery = '';
   String selectedSearchField = 'name';
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -49,24 +51,20 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
             children: [
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Row(
                   children: [
                     // Dropdown for selecting search field
                     Expanded(
                       flex: 2,
                       child: DropdownButton<String>(
-                        style: const TextStyle(color: Colors.black),
+                        style: const TextStyle(color: Colors.white),
                         value: selectedSearchField,
                         items: const [
                           DropdownMenuItem(value: 'name', child: Text('Name')),
-                          DropdownMenuItem(
-                              value: 'status', child: Text('Status')),
-                          DropdownMenuItem(
-                              value: 'assignedBy', child: Text('Assigned By')),
-                          DropdownMenuItem(
-                              value: 'assignedUsers',
-                              child: Text('Assigned Users')),
+                          DropdownMenuItem(value: 'status', child: Text('Status')),
+                          DropdownMenuItem(value: 'assignedBy', child: Text('Assigned By')),
+                          DropdownMenuItem(value: 'assignedUsers', child: Text('Assigned Users')),
                         ],
                         onChanged: (value) {
                           setState(() {
@@ -93,25 +91,25 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
                           hintStyle: TextStyle(color: Colors.grey[500]),
                           suffixIcon: searchQuery.isNotEmpty
                               ? IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () {
-                                    setState(() {
-                                      searchQuery = '';
-                                      _searchController.clear();
-                                    });
-                                    _refreshTestCases();
-                                  },
-                                )
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              setState(() {
+                                searchQuery = '';
+                                _searchController.clear();
+                              });
+                              _refreshTestCases();
+                            },
+                          )
                               : null,
                           prefixIcon:
-                              const Icon(Icons.search, color: Colors.grey),
+                          const Icon(Icons.search, color: Colors.grey),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
                             borderSide:
-                                const BorderSide(color: Colors.grey, width: 1),
+                            const BorderSide(color: Colors.grey, width: 1),
                           ),
                           contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 16),
+                          const EdgeInsets.symmetric(horizontal: 16),
                           fillColor: Colors.white,
                           filled: true,
                         ),
@@ -127,19 +125,21 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
       body: FutureBuilder<List<TestCase>>(
         future: Future.value(widget.listTestCase),
         builder: (context, snapshot) {
+          // Check for loading state
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          // Handle error state
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('Failed to load test cases: ${snapshot.error}'));
           }
+          // Ensure data is not null, otherwise show an empty message
           final testCases = snapshot.data ?? [];
           if (testCases.isEmpty) {
-            return const Center(
-                child: Text('No test cases found for this scenario.'));
+            return const Center(child: Text('No test cases found for this scenario.'));
           }
 
-          // Apply the filtering logic
+          // Apply filtering logic and build the list
           final filteredTestCases = _applyFilters(testCases);
 
           return ListView.builder(
@@ -148,30 +148,54 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
               final testCase = filteredTestCases[index];
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                elevation: 4,
+                elevation: 6,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
+                color: getStatusColor(testCase.status!),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
                   title: Text(
                     'TestCase: ${testCase.name}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Colors.black87,
+                    ),
                   ),
-                  subtitle: Text(
-                    'Status: ${testCase.status}',
-                    style: const TextStyle(color: Colors.blueGrey),
+                  subtitle: Row(
+                    children: [
+                      Icon(
+                        getStatusIcon(testCase.status!),
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Status: ${testCase.status}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
                   ),
                   trailing: Chip(
-                    label: Text('ID: ${testCase.id}'),
-                    backgroundColor: Colors.red,
+                    label: Text(
+                      'ID: ${testCase.id}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    backgroundColor: Colors.purple,
                     labelStyle: const TextStyle(color: Colors.white),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    RoutesName.editTestCaseScreen,
-                    arguments: testCase,
-                  ),
+                  onTap: () =>
+                      Navigator.pushNamed(
+                        context,
+                        RoutesName.editTestCaseScreen,
+                        arguments: testCase,
+                      ),
                 ),
               );
             },

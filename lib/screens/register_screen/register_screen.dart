@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:scenario_management/firebase/firestore_services.dart';
 import 'package:scenario_management/route_names/route_names.dart';
 import '../../TypeDef/type_def.dart';
 
@@ -7,7 +7,7 @@ import '../../TypeDef/type_def.dart';
 class RegisterScreen extends StatefulWidget {
   final bool isLoading;
   final RegisterWithEmailAndDesignationTypeDef
-  registerWithEmailAndDesignationTypeDef;
+      registerWithEmailAndDesignationTypeDef;
 
   const RegisterScreen({
     super.key,
@@ -23,6 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
 
   List<Map<String, String>> designations = [];
@@ -37,15 +38,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _fetchDesignations() async {
     try {
-      QuerySnapshot snapshot =
-      await FirebaseFirestore.instance.collection('role').get();
+      List<Map<String, String>> fetchedDesignations = await FirestoreService().fetchDesignations();
       setState(() {
-        designations = snapshot.docs.map((doc) {
-          return {
-            'id': doc['id'] as String,
-            'name': doc['name'] as String,
-          };
-        }).toList();
+        designations = fetchedDesignations;
       });
     } catch (e) {
       print("Error fetching roles: $e");
@@ -60,7 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     // Call the registration function
-     widget.registerWithEmailAndDesignationTypeDef(
+    widget.registerWithEmailAndDesignationTypeDef(
       _emailController.text,
       _passwordController.text,
       selectedDesignation?['id'] ?? '',
@@ -82,103 +77,164 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        backgroundColor: Colors.grey[800],
+        centerTitle: true,
       ),
       body: Form(
         key: _form,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-              TextFormField(
-                keyboardType: TextInputType.name,
-                controller: _nameController,
-                validator: (text) =>
-                text == null || text.isEmpty ? "Name is Empty" : null,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.all(15),
-                  hintText: 'Name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
+        child: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  Text(
+                    'Register',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                keyboardType: TextInputType.emailAddress,
-                controller: _emailController,
-                validator: (text) =>
-                text == null || text.isEmpty ? "Email is Empty" : null,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.all(15),
-                  hintText: 'Email',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
+                  // Name Field
+                  TextFormField(
+                    keyboardType: TextInputType.name,
+                    controller: _nameController,
+                    validator: (text) =>
+                        text == null || text.isEmpty ? "Name is Empty" : null,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.all(15),
+                      hintText: 'Name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: const Icon(Icons.format_color_text_rounded,
+                          color: Colors.grey),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                keyboardType: TextInputType.text,
-                controller: _passwordController,
-                obscureText: true,
-                validator: (text) =>
-                text == null || text.isEmpty ? "Password is Empty" : null,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.all(15),
-                  hintText: 'Password',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
+                  const SizedBox(height: 20),
+                  // Email Field
+                  TextFormField(
+                    keyboardType: TextInputType.emailAddress,
+                    controller: _emailController,
+                    validator: (text) =>
+                        text == null || text.isEmpty ? "Email is Empty" : null,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.all(15),
+                      hintText: 'Email',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: const Icon(Icons.email, color: Colors.grey),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              designations.isEmpty
-                  ? const CircularProgressIndicator()
-                  : DropdownButtonFormField<Map<String, String>>(
-                value: selectedDesignation,
-                items: designations.map((designation) {
-                  return DropdownMenuItem<Map<String, String>>(
-                    value: designation,
-                    child: Text(designation['name']!),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedDesignation = value;
-                  });
-                },
-                hint: const Text('Select Designation'),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.all(15),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
+                  const SizedBox(height: 20),
+                  // Password Field
+                  TextFormField(
+                    keyboardType: TextInputType.text,
+                    controller: _passwordController,
+                    obscureText: true,
+                    validator: (text) =>
+                        text == null || text.isEmpty ? "Password is Empty" : null,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.all(15),
+                      hintText: 'Password',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+                    ),
                   ),
-                ),
-                validator: (value) =>
-                value == null ? 'Please select a designation' : null,
+                  const SizedBox(height: 20),
+                  // Confirm Password Field
+                  TextFormField(
+                    keyboardType: TextInputType.text,
+                    controller: _confirmPasswordController,
+                    obscureText: true,
+                    validator: (text) {
+                      if (text == null || text.isEmpty) {
+                        return "Confirm Password is Empty";
+                      } else if (text != _passwordController.text) {
+                        return "Passwords do not match";
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.all(15),
+                      hintText: 'Confirm Password',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Dropdown for Designation
+                  designations.isEmpty
+                      ? const CircularProgressIndicator()
+                      : DropdownButtonFormField<Map<String, String>>(
+                          value: selectedDesignation,
+                          items: designations.map((designation) {
+                            return DropdownMenuItem<Map<String, String>>(
+                              value: designation,
+                              child: Text(designation['name']!),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedDesignation = value;
+                            });
+                          },
+                          hint: const Text('Select Designation'),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.all(15),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: BorderSide.none,
+                            ),
+                            prefixIcon: const Icon(Icons.accessibility_sharp,
+                                color: Colors.grey),
+                          ),
+                          validator: (value) => value == null
+                              ? 'Please select a designation'
+                              : null,
+                        ),
+                  const SizedBox(height: 20),
+                  // Submit Button
+                  _isSubmitting
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: _submit,
+                          child: const Text('Submit'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Colors.greenAccent, // Green Accent Button
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                        ),
+                ],
               ),
-              const SizedBox(height: 20),
-              _isSubmitting
-                  ? const CircularProgressIndicator() // Loading indicator during submission
-                  : ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Submit'),
-              ),
-            ],
+            ),
           ),
         ),
       ),

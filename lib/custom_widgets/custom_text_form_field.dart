@@ -5,14 +5,16 @@ Widget buildTextFormField({
   required TextEditingController controller,
   required String label,
   required String hintText,
+  required bool enabled,
   int? maxLines = 1,
 }) {
   return TextFormField(
     controller: controller,
+    enabled: enabled,
     decoration: InputDecoration(
       labelText: label,
       hintText: hintText,
-      border: OutlineInputBorder(),
+      border: const OutlineInputBorder(),
       filled: true,
       fillColor: Colors.grey.shade100,
     ),

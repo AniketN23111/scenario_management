@@ -7,8 +7,8 @@ class AddCommentField extends StatelessWidget {
   const AddCommentField({
     required this.controller,
     required this.onAddComment,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,6 @@ class AddCommentField extends StatelessWidget {
           icon: const Icon(Icons.send),
           onPressed: onAddComment,
         ),
-        border: OutlineInputBorder(),
         filled: true,
         fillColor: Colors.grey.shade100,
       ),

@@ -1,11 +1,58 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../constants/enums.dart';
 import '../models/comments.dart';
 import '../models/scenario.dart';
 import '../models/status_change_log.dart';
 import '../models/test_cases.dart';
+import '../models/user_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  Future<UserModel> createUser(String email, String password) async {
+    // Sign in with email and password using FirebaseAuth
+    final UserCredential credential =
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: email.trim(),
+      password: password.trim(),
+    );
+
+    // Check if the user is valid
+    User? currentUser = credential.user;
+
+    if (currentUser != null) {
+      // Fetch the user document from Firestore
+      final DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      // Retrieve fields with default fallback values
+      String designation = userDoc['designation'] ?? 'Unknown';
+      String name = userDoc['name'] ?? 'Unknown';
+
+      // Create UserModel
+      return UserModel.fromFirebaseUser(currentUser, designation, name);
+    } else {
+      throw Exception("Failed to authenticate user.");
+    }
+  }
+
+  Future<List<Map<String, String>>> fetchDesignations() async {
+    try {
+      QuerySnapshot snapshot = await _db.collection('role').get();
+      return snapshot.docs.map((doc) {
+        return {
+          'id': doc['id'] as String,
+          'name': doc['name'] as String,
+        };
+      }).toList();
+    } catch (e) {
+      print("Error fetching roles: $e");
+      return [];
+    }
+  }
 
   /// Fetch all projects
   Future<List<Map<String, dynamic>>> getProjects() async {
@@ -217,12 +264,16 @@ class FirestoreService {
   }
 
   /// Get user names from the users collection
-  Future<List<String>> getUserNames() async {
+  Future<List<String>> getAssignedUsers() async {
     try {
-      QuerySnapshot snapshot = await _db.collection('users').get();
-      return snapshot.docs.map((doc) => doc['email'] as String).toList();
+      final snapshot = await _db.collection('users').get();
+      // Combine the name and email for display
+      return snapshot.docs
+          .map((doc) => "${doc['name']} (${doc['email']})")
+          .toList();
     } catch (e) {
-      throw Exception("Failed to fetch user names: $e");
+      print("Error fetching users: $e");
+      return [];
     }
   }
 
@@ -265,5 +316,24 @@ class FirestoreService {
     snapshot.docs.map((e) => print(e.id));
     print(list.first.testCaseId);
     return list;
+  }
+
+  Future<UserRole> fetchUserRole(String userId) async {
+    final roleQuerySnapshot = await FirebaseFirestore.instance
+        .collection('role')
+        .where('id', isEqualTo: userId)
+        .get();
+
+    if (roleQuerySnapshot.docs.isEmpty) {
+      // Handle the case where no documents are found
+      print('No role found for userId: $userId');
+      // You can either throw an error, return a default value, or handle the case
+      return UserRole.admin; // Returning a default role (you can change this)
+    }
+
+    final roleDoc = roleQuerySnapshot.docs.first;
+    final roleName = roleDoc.data()['name'];
+    print(roleName);
+    return UserRoleExtension.fromString(roleName);
   }
 }

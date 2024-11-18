@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:scenario_management/constants/get_status_color.dart';
+import 'package:scenario_management/constants/get_status_icon.dart';
 import '../../../../models/status_change_log.dart';
 
 class StatusChangeCard extends StatelessWidget {
@@ -48,35 +50,5 @@ class StatusChangeCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color getStatusColor(String status) {
-    switch (status) {
-      case 'Passed':
-        return Colors.green;
-      case 'Failed':
-        return Colors.red;
-      case 'In-Review':
-        return Colors.orange;
-      case 'Completed':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData getStatusIcon(String status) {
-    switch (status) {
-      case 'Passed':
-        return Icons.check_circle;
-      case 'Failed':
-        return Icons.cancel;
-      case 'In-Review':
-        return Icons.pending;
-      case 'Completed':
-        return Icons.done_all;
-      default:
-        return Icons.info;
-    }
   }
 }

@@ -11,6 +11,7 @@ class RegisterScreenViewModel extends Vm {
   final RegisterWithEmailAndDesignationTypeDef
       registerWithEmailAndDesignationTypeDef;
 
+
   RegisterScreenViewModel(
       {required this.isLoading,
       required this.registerWithEmailAndDesignationTypeDef})
@@ -25,9 +26,13 @@ class Factory extends VmFactory<AppState, RegisterScreenConnector,
   RegisterScreenViewModel? fromStore() => RegisterScreenViewModel(
       isLoading: state.loading,
       registerWithEmailAndDesignationTypeDef:
-          (String email, String password, String designation,String name) {
+          (String email, String password, String designation, String name) {
         dispatch(RegisterWithEmailDesignationAction(
-            email: email, password: password, designation: designation,name: name));
+            email: email,
+            password: password,
+            designation: designation,
+            name: name));
+
         /// If successful, navigate to the login route
         dispatch(NavigateAction.pushNamed(RoutesName.loginScreen));
       });

@@ -1,5 +1,6 @@
 import 'package:scenario_management/models/comments.dart';
 
+import '../constants/enums.dart';
 import '../models/scenario.dart';
 import '../models/status_change_log.dart';
 import '../models/test_cases.dart';
@@ -16,6 +17,7 @@ class AppState {
   final List<TestCase> listTestCase;
   final List<StatusChange> statusChangeList;
   final List<Comments> commentList;
+  final UserRole userRole;
 
   AppState(
       {required this.loading,
@@ -26,7 +28,8 @@ class AppState {
       required this.projectScenarios,
       required this.listTestCase,
       required this.statusChangeList,
-      required this.commentList});
+      required this.commentList,
+      required this.userRole});
 
   AppState copy(
           {bool? loading,
@@ -35,9 +38,10 @@ class AppState {
           Scenario? scenario,
           List<Map<String, dynamic>>? projects,
           Map<String, List<Scenario>>? projectScenarios,
-            List<TestCase>? listTestCase,
+          List<TestCase>? listTestCase,
           List<StatusChange>? statusChangeList,
-          List<Comments>? commentList}) =>
+          List<Comments>? commentList,
+          UserRole? userRole}) =>
       AppState(
           loading: loading ?? this.loading,
           userModel: userModel ?? this.userModel,
@@ -47,7 +51,8 @@ class AppState {
           projectScenarios: projectScenarios ?? this.projectScenarios,
           listTestCase: listTestCase ?? this.listTestCase,
           statusChangeList: statusChangeList ?? this.statusChangeList,
-          commentList: commentList ?? this.commentList);
+          commentList: commentList ?? this.commentList,
+          userRole: userRole ?? this.userRole);
 
   static AppState initState() => AppState(
       loading: false,
@@ -58,7 +63,8 @@ class AppState {
       projectScenarios: {},
       listTestCase: [],
       statusChangeList: [],
-      commentList: []);
+      commentList: [],
+      userRole: UserRole.juniorTester);
 
   @override
   bool operator ==(Object other) =>

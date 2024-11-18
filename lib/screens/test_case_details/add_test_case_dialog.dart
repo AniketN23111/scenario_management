@@ -42,7 +42,7 @@ class _AddTestCaseDialogState extends State<AddTestCaseDialog> {
   void initState() {
     super.initState();
     // Fetch the list of users
-    _usersFuture = firestoreService.getUserNames();
+    _usersFuture = firestoreService.getAssignedUsers();
   }
 
   Future<void> _submitTestCaseForm() async {

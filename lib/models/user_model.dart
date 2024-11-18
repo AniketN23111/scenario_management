@@ -17,25 +17,38 @@ class UserModel extends HiveObject {
   @HiveField(3)
   final String? designation;
 
-  UserModel({ this.uid,  this.email,this.name, this.designation});
+  UserModel({
+    this.uid,
+    this.email,
+    this.name,
+    this.designation,
+  });
 
-  ///Factory method to create UserModel from a map (Firestore document data)
-  factory UserModel.fromMap(Map<String, dynamic> data) {
+  /// Factory method to create UserModel from a map (Firestore document data)
+  factory UserModel.fromMap(Map<String, dynamic>? data) {
+    if (data == null) {
+      return UserModel(); // Return an empty UserModel if data is null
+    }
+
     return UserModel(
-      uid: data['uid'] as String?,
-      email: data['email'] as String?,
-      name: data['name'] as String?,
-      designation: data['designation'] as String?,
+      uid: data['uid'] as String? ?? '',
+      email: data['email'] as String? ?? '',
+      name: data['name'] as String? ?? '',
+      designation: data['designation'] as String? ?? '',
     );
   }
 
   /// Method to create a UserModel from Firebase User and additional data
-  factory UserModel.fromFirebaseUser(User user, String designation,String name) {
+  factory UserModel.fromFirebaseUser(User? user, String? designation, String? name) {
+    if (user == null) {
+      return UserModel(); // Return an empty UserModel if user is null
+    }
+
     return UserModel(
-      uid: user.uid,
-      email: user.email,
-      name: name,
-      designation: designation,
+      uid: user.uid ,
+      email: user.email ?? '',
+      name: name ?? '',
+      designation: designation ?? '',
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
+import 'package:scenario_management/constants/enums.dart';
 import 'package:scenario_management/models/scenario.dart';
 import 'package:scenario_management/models/user_model.dart';
 import 'package:scenario_management/screens/test_case_details/edi_test_case/edit_test_case_view_model.dart';
@@ -15,6 +16,7 @@ class EditTestCaseScreenConnector extends StatelessWidget {
   final TestCase? testCase;
   final UserModel? userModel;
   final Scenario? scenario;
+  final UserRole? userRole;
   final List<StatusChange>? statusChangeList;
   final List<Comments>? commentList;
 
@@ -22,6 +24,7 @@ class EditTestCaseScreenConnector extends StatelessWidget {
     super.key,
     this.testCase,
     this.scenario,
+    this.userRole,
     this.userModel,
     this.statusChangeList,
     this.commentList,
@@ -45,6 +48,7 @@ class EditTestCaseScreenConnector extends StatelessWidget {
         scenario: vm.scenario,
         userModel: vm.userModel,
         testCase: testCase,
+        userRole: vm.userRole,
         updateTestCase: vm.updateTestCase,
         addComment: vm.addComment,
         statusUpdate: vm.statusUpdate,
