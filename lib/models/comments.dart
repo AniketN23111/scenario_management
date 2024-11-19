@@ -6,6 +6,7 @@ class Comments {
   final String content; // The comment text
   final String commentedBy; // Name of the user who made the comment
   final DateTime? timestamp; // Timestamp when the comment was created
+  final String? imageUrl;
 
   Comments({
     required this.id,
@@ -13,6 +14,7 @@ class Comments {
     required this.content,
     required this.commentedBy,
     required this.timestamp,
+    required this.imageUrl,
   });
 
   // Factory constructor to create a Comment from Firestore document data
@@ -26,6 +28,7 @@ class Comments {
       timestamp: data['createdAt'] != null
           ? (data['createdAt'] as Timestamp).toDate()
           : null,
+      imageUrl: data['imageUrl'] ?? '',
     );
   }
 
@@ -36,6 +39,7 @@ class Comments {
       'content': content,
       'commentedBy': commentedBy,
       'timestamp': timestamp,
+      'imageUrl' :imageUrl
     };
   }
 }

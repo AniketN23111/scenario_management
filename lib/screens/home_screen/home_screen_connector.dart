@@ -36,7 +36,6 @@ class HomeScreenConnector extends StatelessWidget {
         fetchScenariosByProject: vm.fetchScenariosByProject,
         signOut: vm.signOut,
         addScenario: vm.addScenario,
-        getProjects: vm.getProjects,
         updateScenarioStore:vm.updateScenarioStore,
         checkExistingUser: vm.checkExistingUser,
         getRole: vm.getRole,

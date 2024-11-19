@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scenario_management/firebase/firestore_services.dart';
 
 import '../../../constants/hive_service.dart';
@@ -19,15 +20,30 @@ class LoginWithEmailPasswordAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState?> reduce() async {
-    // Call createUser to fetch UserModel
-    UserModel userModel = await FirestoreService().createUser(email, password);
-    roleID =userModel.designation!;
 
-    // Save UserModel using HiveService
-    await HiveService().saveUser(userModel);
+    try{
+      // Call createUser to fetch UserModel
+      UserModel userModel = await FirestoreService().createUser(email, password);
+      roleID =userModel.designation!;
 
-    // Return updated state with userModel
-    return state.copy(userModel: userModel);
+      // Save UserModel using HiveService
+      await HiveService().saveUser(userModel);
+
+      // Return updated state with userModel
+      return state.copy(userModel: userModel,err: null);
+    }
+    on FirebaseAuthException catch (e) {
+      String errorMessage;
+      if (e.code == 'user-not-found') {
+        errorMessage ='No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        errorMessage ='Wrong password provided for that user.';
+      }
+      else {
+        errorMessage = "Failed to register: ${e.message}";
+      }
+      return state.copy(err: errorMessage);
+    }
   }
 
   @override

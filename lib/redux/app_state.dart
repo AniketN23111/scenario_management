@@ -1,6 +1,7 @@
 import 'package:scenario_management/models/comments.dart';
 
 import '../constants/enums.dart';
+import '../constants/response.dart';
 import '../models/scenario.dart';
 import '../models/status_change_log.dart';
 import '../models/test_cases.dart';
@@ -18,6 +19,8 @@ class AppState {
   final List<StatusChange> statusChangeList;
   final List<Comments> commentList;
   final UserRole userRole;
+  final Response response;
+  final String err;
 
   AppState(
       {required this.loading,
@@ -29,7 +32,9 @@ class AppState {
       required this.listTestCase,
       required this.statusChangeList,
       required this.commentList,
-      required this.userRole});
+      required this.userRole,
+      required this.response,
+      required this.err});
 
   AppState copy(
           {bool? loading,
@@ -41,7 +46,9 @@ class AppState {
           List<TestCase>? listTestCase,
           List<StatusChange>? statusChangeList,
           List<Comments>? commentList,
-          UserRole? userRole}) =>
+          UserRole? userRole,
+          Response? response,
+          String? err}) =>
       AppState(
           loading: loading ?? this.loading,
           userModel: userModel ?? this.userModel,
@@ -52,7 +59,9 @@ class AppState {
           listTestCase: listTestCase ?? this.listTestCase,
           statusChangeList: statusChangeList ?? this.statusChangeList,
           commentList: commentList ?? this.commentList,
-          userRole: userRole ?? this.userRole);
+          userRole: userRole ?? this.userRole,
+          response: response ?? this.response,
+          err: err ?? this.err);
 
   static AppState initState() => AppState(
       loading: false,
@@ -64,7 +73,9 @@ class AppState {
       listTestCase: [],
       statusChangeList: [],
       commentList: [],
-      userRole: UserRole.juniorTester);
+      userRole: UserRole.juniorTester,
+      response: Response(),
+      err: '');
 
   @override
   bool operator ==(Object other) =>
@@ -77,7 +88,9 @@ class AppState {
           projectScenarios == other.projectScenarios &&
           listTestCase == other.listTestCase &&
           statusChangeList == other.statusChangeList &&
-          commentList == other.commentList;
+          commentList == other.commentList &&
+          response == other.response &&
+          err == other.err;
 
   @override
   int get hashCode =>
@@ -88,5 +101,7 @@ class AppState {
       projectScenarios.hashCode ^
       listTestCase.hashCode ^
       statusChangeList.hashCode ^
-      commentList.hashCode;
+      commentList.hashCode ^
+      response.hashCode ^
+      err.hashCode;
 }

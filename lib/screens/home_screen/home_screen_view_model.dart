@@ -2,7 +2,6 @@ import 'package:async_redux/async_redux.dart';
 import 'package:scenario_management/constants/enums.dart';
 import 'package:scenario_management/redux/actions/home_screen/add_scenario_action.dart';
 import 'package:scenario_management/redux/actions/home_screen/fetch_scenario_by_project.dart';
-import 'package:scenario_management/redux/actions/home_screen/get_project_action.dart';
 import 'package:scenario_management/redux/actions/home_screen/get_user_role_action.dart';
 import 'package:scenario_management/redux/actions/test_case/update_scenario_action.dart';
 
@@ -20,7 +19,6 @@ class HomeScreenViewModel extends Vm {
   final UserRole userRole;
   final void Function() signOut;
   final void Function() checkExistingUser;
-  final void Function() getProjects;
   final void Function(Scenario scenario) addScenario;
   final void Function(Scenario scenario) updateScenarioStore;
   final void Function(String projectID) fetchScenariosByProject;
@@ -36,7 +34,6 @@ class HomeScreenViewModel extends Vm {
       required this.signOut,
       required this.checkExistingUser,
       required this.addScenario,
-      required this.getProjects,
       required this.updateScenarioStore,
       required this.fetchScenariosByProject,
       required this.projects,
@@ -68,7 +65,6 @@ class Factory
           dispatch(FetchScenarioByProjectAction(projectID)),
       signOut: () => dispatch(MyHomePageSignOutAction()),
       checkExistingUser: () => dispatch(CheckExistingUserAction()),
-      getProjects: () => dispatch(GetProjectAction()),
       updateScenarioStore: (Scenario scenario) =>
           dispatch(UpdateScenarioAction(scenario)),
       addScenario: (Scenario scenario) =>

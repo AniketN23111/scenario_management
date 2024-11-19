@@ -12,7 +12,6 @@ class HomeScreen extends StatefulWidget {
   final UserRole userRole;
   final void Function() signOut;
   final void Function() checkExistingUser;
-  final void Function() getProjects;
   final void Function(Scenario scenario) addScenario;
   final void Function(Scenario scenario) updateScenarioStore;
   final void Function(String projectID) fetchScenariosByProject;
@@ -29,7 +28,6 @@ class HomeScreen extends StatefulWidget {
       required this.signOut,
       required this.checkExistingUser,
       required this.addScenario,
-      required this.getProjects,
       required this.fetchScenariosByProject,
       required this.projects,
       required this.projectScenarios,
@@ -48,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     widget.checkExistingUser();
-    widget.getProjects();
   }
 
   @override

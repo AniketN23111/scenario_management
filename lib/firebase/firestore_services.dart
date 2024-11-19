@@ -10,6 +10,24 @@ import '../models/user_model.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  Future<void> registerUser(String email,String password,String name,String designation) async{
+    /// Register user with Firebase Authentication
+    UserCredential userCredential =
+    await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email.trim(),
+      password: password.trim(),
+    );
+
+    /// Save additional user data (designation) to Firebase Firestore
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userCredential.user!.uid)
+        .set({
+      'email': email.trim(),
+      'name': name,
+      'designation': designation,
+    });
+  }
   Future<UserModel> createUser(String email, String password) async {
     // Sign in with email and password using FirebaseAuth
     final UserCredential credential =
@@ -311,8 +329,6 @@ class FirestoreService {
         .get();
     final list =
         snapshot.docs.map((doc) => Comments.fromFirestore(doc)).toList();
-    snapshot.docs.map((e) => print(e.id));
-    print(list.first.testCaseId);
     return list;
   }
 

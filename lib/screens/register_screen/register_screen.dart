@@ -8,11 +8,13 @@ class RegisterScreen extends StatefulWidget {
   final bool isLoading;
   final RegisterWithEmailAndDesignationTypeDef
       registerWithEmailAndDesignationTypeDef;
+  final String err;
 
   const RegisterScreen({
     super.key,
     required this.isLoading,
     required this.registerWithEmailAndDesignationTypeDef,
+    required this.err,
   });
 
   @override
@@ -66,11 +68,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     await Future.delayed(const Duration(seconds: 1));
 
     setState(() {
+
       _isSubmitting = false;
     });
+    if(widget.err.isEmpty)
+      {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Register Successfully'),backgroundColor: Colors.lightGreen,),
+        );
+        await Future.delayed(const Duration(seconds: 1));
+        // Navigate to the login screen upon success
+        Navigator.pushNamed(context, RoutesName.loginScreen);
+      }
+   else{
+      ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text(widget.err),backgroundColor: Colors.redAccent,),
+      );
+    }
 
-    // Navigate to the login screen upon success
-    Navigator.pushNamed(context, RoutesName.loginScreen);
   }
 
   @override
@@ -218,7 +233,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ? const CircularProgressIndicator()
                         : ElevatedButton(
                             onPressed: _submit,
-                            child: const Text('Submit'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
                                   Colors.greenAccent, // Green Accent Button
@@ -228,6 +242,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                             ),
+                            child: const Text('Submit'),
                           ),
                   ],
                 ),

@@ -8,12 +8,14 @@ import '../../route_names/route_names.dart';
 
 class RegisterScreenViewModel extends Vm {
   final bool isLoading;
+  final String err;
   final RegisterWithEmailAndDesignationTypeDef
       registerWithEmailAndDesignationTypeDef;
 
 
   RegisterScreenViewModel(
       {required this.isLoading,
+        required this.err,
       required this.registerWithEmailAndDesignationTypeDef})
       : super(equals: [isLoading]);
 }
@@ -25,6 +27,7 @@ class Factory extends VmFactory<AppState, RegisterScreenConnector,
   @override
   RegisterScreenViewModel? fromStore() => RegisterScreenViewModel(
       isLoading: state.loading,
+      err: state.err,
       registerWithEmailAndDesignationTypeDef:
           (String email, String password, String designation, String name) {
         dispatch(RegisterWithEmailDesignationAction(

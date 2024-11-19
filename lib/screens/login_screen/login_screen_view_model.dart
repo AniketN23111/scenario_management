@@ -8,10 +8,12 @@ import 'login_screen_connector.dart';
 ///Login Screen View Model
 class LoginScreenViewModel extends Vm {
   final bool isLoading;
+  final String err;
   final SignInWithEmailAndPasswordTypeDef signInWithEmailAndPasswordTypeDef;
 
   LoginScreenViewModel({
     required this.isLoading,
+    required this.err,
     required this.signInWithEmailAndPasswordTypeDef,
   }) : super(equals: [isLoading]);
 }
@@ -24,6 +26,7 @@ class Factory
   @override
   LoginScreenViewModel fromStore() => LoginScreenViewModel(
         isLoading: state.loading,
+        err: state.err,
         signInWithEmailAndPasswordTypeDef: (String email, String password) {
           dispatch(LoginWithEmailPasswordAction(
               email: email, password: password));

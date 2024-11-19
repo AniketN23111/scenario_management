@@ -5,11 +5,13 @@ import '../../route_names/route_names.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool? isLoading;
+  final String err;
   final SignInWithEmailAndPasswordTypeDef signInWithEmailAndPassword;
 
   const LoginScreen(
       {super.key,
       required this.isLoading,
+      required this.err,
       required this.signInWithEmailAndPassword});
 
   @override
@@ -23,6 +25,27 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+  }
+
+  Future<void> userLogin() async{
+    widget.signInWithEmailAndPassword(
+        _emailController.text,
+        _passwordController.text);
+    if(widget.err.isEmpty)
+    {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login Successfully'),backgroundColor: Colors.lightGreen,),
+      );
+      await Future.delayed(const Duration(seconds: 2));
+      // Navigate to the login screen upon success
+      Navigator.pushNamed(
+          context, RoutesName.homePageScreen);
+    }
+    else{
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.err),backgroundColor: Colors.redAccent,),
+      );
+    }
   }
 
   @override
@@ -103,14 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: CircularProgressIndicator(),
                         )
                       : ElevatedButton(
-                          onPressed: () {
-                            widget.signInWithEmailAndPassword(
-                                _emailController.text, _passwordController.text);
-                            if (widget.isLoading == false) {
-                              Navigator.pushNamed(
-                                  context, RoutesName.homePageScreen);
-                            }
-                          },
+                          onPressed: () =>userLogin,
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 Colors.greenAccent, // Green Accent Button
@@ -133,7 +149,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     child: const Text(
                       'Don\'t have an account? Register here',
-                      style: TextStyle(color: Colors.grey,fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.grey, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

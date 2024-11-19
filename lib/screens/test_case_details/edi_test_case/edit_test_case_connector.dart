@@ -48,6 +48,7 @@ class EditTestCaseScreenConnector extends StatelessWidget {
         scenario: vm.scenario,
         userModel: vm.userModel,
         testCase: testCase,
+        response: vm.response,
         userRole: vm.userRole,
         updateTestCase: vm.updateTestCase,
         addComment: vm.addComment,
@@ -56,6 +57,7 @@ class EditTestCaseScreenConnector extends StatelessWidget {
         commentList: vm.commentList,
         getCommentList: vm.getCommentList,
         statusUpdateList: vm.statusUpdateList,
+        onUploadImage: vm.onUploadImage,
       ),
     );
   }

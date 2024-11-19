@@ -19,7 +19,6 @@ ThemeData juniorTesterThemeData = ThemeData(
   scaffoldBackgroundColor: Colors.white,
   // White background for light theme
   brightness: Brightness.light,
-  canvasColor: Colors.blue,
     dropdownMenuTheme: const DropdownMenuThemeData(textStyle: TextStyle(color: Colors.white))
 );
 

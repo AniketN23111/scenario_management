@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scenario_management/constants/locator.dart';
 import 'package:scenario_management/route_names/route_names.dart';
 import 'package:scenario_management/screens/home_screen/home_screen_connector.dart';
 import 'package:scenario_management/screens/login_screen/login_screen_connector.dart';
@@ -22,6 +23,7 @@ late Store<AppState> store;
 final ThemeManager themeManager = ThemeManager();
 
 Future<void> main() async {
+  await setupServiceLocator();
   WidgetsFlutterBinding.ensureInitialized();
 
   /// Initialize Store

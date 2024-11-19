@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:scenario_management/constants/response.dart';
 import 'package:scenario_management/firebase/firestore_services.dart';
 import 'package:scenario_management/redux/actions/edit_test_case_screen/get_list_comment_action.dart';
 import 'package:scenario_management/redux/actions/loading_actions/is_loading.dart';
@@ -16,7 +17,7 @@ class AddCommentAction extends ReduxAction<AppState> {
   @override
   Future<AppState> reduce() async {
     FirestoreService().addComment(testCaseId, commentData);
-    return state.copy();
+    return state.copy(response: Response());
   }
 
   @override

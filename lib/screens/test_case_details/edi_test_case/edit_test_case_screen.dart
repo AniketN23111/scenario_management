@@ -1,7 +1,9 @@
 import 'dart:async';
-
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:scenario_management/constants/enums.dart';
 import 'package:scenario_management/custom_widgets/custom_text_form_field.dart';
 import 'package:scenario_management/models/scenario.dart';
@@ -10,15 +12,19 @@ import 'package:scenario_management/screens/test_case_details/edi_test_case/widg
 import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/comments_section.dart';
 import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/status_changes_section.dart';
 import 'package:scenario_management/screens/test_case_details/edi_test_case/widgets/status_dropdown.dart';
+import '../../../constants/locator.dart';
+import '../../../constants/response.dart';
 import '../../../models/comments.dart';
 import '../../../models/test_cases.dart';
 import '../../../models/user_model.dart';
+import '../../../services/data_service.dart';
 
 class EditTestCaseScreen extends StatefulWidget {
   final TestCase testCase;
   final UserModel userModel;
   final Scenario scenario;
   final UserRole userRole;
+  final Response response;
   final void Function(Scenario scenario, TestCase updatedTestCase)
       updateTestCase;
   final void Function(String testCaseId, Map<String, dynamic> commentData)
@@ -29,12 +35,14 @@ class EditTestCaseScreen extends StatefulWidget {
   final void Function(String testCaseId) statusUpdateList;
   final List<StatusChange> statusChangeList;
   final List<Comments> commentList;
+  final void Function(Uint8List fileBytes, String fileName) onUploadImage;
 
   const EditTestCaseScreen(
       {super.key,
       required this.testCase,
       required this.scenario,
       required this.userModel,
+      required this.response,
       required this.userRole,
       required this.updateTestCase,
       required this.addComment,
@@ -42,7 +50,8 @@ class EditTestCaseScreen extends StatefulWidget {
       required this.statusChangeList,
       required this.commentList,
       required this.getCommentList,
-      required this.statusUpdateList});
+      required this.statusUpdateList,
+      required this.onUploadImage});
 
   @override
   _EditTestCaseScreenState createState() => _EditTestCaseScreenState();
@@ -52,15 +61,21 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
   // Text controllers to edit test case fields
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
+  late TextEditingController _testCaseIDController;
   String? _status;
   String? _assignedUserName;
   final TextEditingController _commentController = TextEditingController();
   Future<List<Comments>> list = Future.value([]);
+  File? _imageFile;
+  DataService dataService = locator();
+  String imageURl='';
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.testCase.name);
+    _testCaseIDController =
+        TextEditingController(text: widget.testCase.id);
     _descriptionController =
         TextEditingController(text: widget.testCase.description);
     _status = widget.testCase.status;
@@ -119,16 +134,53 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
     }
   }
 
+  Future<void> _uploadImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile =
+    await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+    if (_imageFile == null) return;
+    // Read the image file as bytes
+    Uint8List fileBytes = await _imageFile!.readAsBytes();
+
+    // Get the image file name
+    String fileName = _imageFile!.uri.pathSegments.last;
+
+    // Wait for the image upload to complete and get the response
+    //await widget.onUploadImage(fileBytes, fileName);
+    Response responseApi = await dataService.uploadFile(fileBytes, fileName);
+
+    // At this point, the response should be updated
+    if (responseApi.err!.isEmpty) {
+      print("Image uploaded successfully: ${responseApi.data}");
+    } else {
+      print("Error uploading image: ${responseApi.err}");
+    }
+     imageURl = _imageFile != null ? responseApi.data['data'] : '';
+  }
   Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
+      // Prepare the comment data
       final commentData = {
         'id': widget.testCase.id,
         'text': _commentController.text,
         'createdBy': widget.userModel.name,
         'createdAt': FieldValue.serverTimestamp(),
+        'imageUrl': imageURl, // Add image URL if available
       };
+
+      // Add the comment with the image URL (if any)
       widget.addComment(widget.testCase.id!, commentData);
+
+      // Clear the comment controller and reset the image file
       _commentController.clear();
+      _imageFile = null; // Reset the image file after submission
+      imageURl = '';
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Comment cannot be empty')),
@@ -203,7 +255,14 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
                 hintText: 'Enter Test Case Name',
               ),
               const SizedBox(height: 8),
-
+              //Test Case ID
+              buildTextFormField(
+                enabled: false,
+                controller: _testCaseIDController,
+                label: 'Test Case ID',
+                hintText: '',
+              ),
+              const SizedBox(height: 8),
               // Description (Form Field)
               buildTextFormField(
                 enabled: true,
@@ -213,7 +272,6 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
                 maxLines: 4,
               ),
               const SizedBox(height: 8),
-
               // Status Dropdown (Form Field)
               StatusDropdown(
                 status: _status,
@@ -248,6 +306,7 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
                   AddCommentField(
                     controller: _commentController,
                     onAddComment: _addComment,
+                    imageUpload: _uploadImage,
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -307,6 +366,7 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
     _nameController.dispose();
     _descriptionController.dispose();
     _commentController.dispose();
+    _testCaseIDController.dispose();
     super.dispose();
   }
 }
