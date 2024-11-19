@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:async_redux/async_redux.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scenario_management/firebase/firestore_services.dart';
+import 'package:scenario_management/models/user_model.dart';
 
+import '../../../constants/hive_service.dart';
 import '../../app_state.dart';
 import '../loading_actions/is_loaded.dart';
 import '../loading_actions/is_loading.dart';
@@ -25,10 +27,10 @@ class RegisterWithEmailDesignationAction extends ReduxAction<AppState> {
   @override
   Future<AppState?> reduce() async {
     try {
-
-      await FirestoreService().registerUser(email, password, name, designation);
-
-      return state.copy(err: null);
+      UserModel userModel = await FirestoreService().registerUser(email, password, name, designation);
+      // Save UserModel using HiveService
+      await HiveService().saveUser(userModel);
+      return state.copy(err: null,userModel: userModel);
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       if (e.code == 'weak-password') {
@@ -38,7 +40,7 @@ class RegisterWithEmailDesignationAction extends ReduxAction<AppState> {
       } else {
         errorMessage = "Failed to register: ${e.message}";
       }
-      return state.copy(err: errorMessage);
+      return state.copy(err: errorMessage,userModel: UserModel());
     }
   }
 

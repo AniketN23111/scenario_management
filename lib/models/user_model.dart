@@ -23,6 +23,7 @@ class UserModel extends HiveObject {
     this.name,
     this.designation,
   });
+  //UserModel.empty();
 
   /// Factory method to create UserModel from a map (Firestore document data)
   factory UserModel.fromMap(Map<String, dynamic>? data) {

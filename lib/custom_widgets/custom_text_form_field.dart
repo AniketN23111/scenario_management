@@ -1,4 +1,5 @@
 // custom_text_form_field.dart
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 Widget buildTextFormField({
@@ -14,7 +15,7 @@ Widget buildTextFormField({
     decoration: InputDecoration(
       labelText: label,
       hintText: hintText,
-      border: const OutlineInputBorder(),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       filled: true,
       fillColor: Colors.grey.shade100,
     ),

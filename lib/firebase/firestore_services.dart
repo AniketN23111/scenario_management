@@ -10,7 +10,7 @@ import '../models/user_model.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Future<void> registerUser(String email,String password,String name,String designation) async{
+  Future<UserModel> registerUser(String email,String password,String name,String designation) async{
     /// Register user with Firebase Authentication
     UserCredential userCredential =
     await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -27,8 +27,13 @@ class FirestoreService {
       'name': name,
       'designation': designation,
     });
+    return UserModel(
+        uid: userCredential.user!.uid,
+      email: email.trim(),
+      name: name,
+      designation: designation);
   }
-  Future<UserModel> createUser(String email, String password) async {
+  Future<UserModel> fetchUser(String email, String password) async {
     // Sign in with email and password using FirebaseAuth
     final UserCredential credential =
     await FirebaseAuth.instance.signInWithEmailAndPassword(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scenario_management/firebase/firestore_services.dart';
+import 'package:scenario_management/models/user_model.dart';
 import 'package:scenario_management/route_names/route_names.dart';
 import '../../TypeDef/type_def.dart';
 
@@ -9,12 +10,14 @@ class RegisterScreen extends StatefulWidget {
   final RegisterWithEmailAndDesignationTypeDef
       registerWithEmailAndDesignationTypeDef;
   final String err;
+  final UserModel userModel;
 
   const RegisterScreen({
     super.key,
     required this.isLoading,
     required this.registerWithEmailAndDesignationTypeDef,
     required this.err,
+    required this.userModel,
   });
 
   @override
@@ -30,7 +33,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   List<Map<String, String>> designations = [];
   Map<String, String>? selectedDesignation;
-  bool _isSubmitting = false; // Loading state
 
   @override
   void initState() {
@@ -51,11 +53,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_form.currentState!.validate()) return;
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
     // Call the registration function
     widget.registerWithEmailAndDesignationTypeDef(
       _emailController.text,
@@ -63,29 +60,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
       selectedDesignation?['id'] ?? '',
       _nameController.text,
     );
-
-    // Simulate Redux state update time
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() {
-
-      _isSubmitting = false;
-    });
-    if(widget.err.isEmpty)
-      {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Register Successfully'),backgroundColor: Colors.lightGreen,),
-        );
-        await Future.delayed(const Duration(seconds: 1));
-        // Navigate to the login screen upon success
-        Navigator.pushNamed(context, RoutesName.loginScreen);
-      }
-   else{
+    await Future.delayed(const Duration(seconds: 2));
+    if (widget.userModel.uid !=null) {
+      // Navigate to the Home screen upon success
+      Navigator.pushNamed(context, RoutesName.loginScreen);
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(widget.err),backgroundColor: Colors.redAccent,),
+        const SnackBar(
+          content: Text('Register Successfully'),
+          backgroundColor: Colors.lightGreen,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(widget.err),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     }
-
   }
 
   @override
@@ -229,8 +221,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                     const SizedBox(height: 20),
                     // Submit Button
-                    _isSubmitting
-                        ? const CircularProgressIndicator()
+                    widget.isLoading == true
+                        ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
                         : ElevatedButton(
                             onPressed: _submit,
                             style: ElevatedButton.styleFrom(

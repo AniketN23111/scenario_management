@@ -10,8 +10,8 @@ class CommentBubble extends StatelessWidget {
   const CommentBubble({
     required this.comment,
     required this.isCurrentUser,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,21 +19,20 @@ class CommentBubble extends StatelessWidget {
       alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.40,
+          maxWidth: MediaQuery.of(context).size.width * 0.60,
         ),
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         padding: const EdgeInsets.all(8),
-        // Reduced padding
         decoration: BoxDecoration(
           color: isCurrentUser
-              ? Colors.blueAccent.withOpacity(0.8)
-              : Colors.black38,
+              ? Theme.of(context).primaryColor.withOpacity(0.4)
+              : Colors.grey[200],
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),
             bottomLeft: isCurrentUser ? const Radius.circular(12) : Radius.zero,
             bottomRight:
-                isCurrentUser ? Radius.zero : const Radius.circular(12),
+            isCurrentUser ? Radius.zero : const Radius.circular(12),
           ),
         ),
         child: Column(
@@ -45,33 +44,22 @@ class CommentBubble extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Colors.black54,
                 ),
               ),
             const SizedBox(height: 2),
             Text(
               comment.content,
               style: const TextStyle(
-                fontSize: 15, // Compact font size
-                color: Colors.white,
+                fontSize: 15,
+                color: Colors.black54,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  DateFormat.yMd()
-                      .add_jm()
-                      .format(comment.timestamp ?? DateTime.now()),
-                  style: const TextStyle(
-                    fontSize: 10, // Smaller timestamp font
-                    color: Colors.white,
-                  ),
-                ),
-                if (comment.imageUrl != null && comment.imageUrl!.isNotEmpty)
+            if (comment.imageUrl != null && comment.imageUrl!.isNotEmpty)
+              Column(
+                children: [
+                  const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () {
                       showDialog(
@@ -87,13 +75,27 @@ class CommentBubble extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Icon(
-                      Icons.image,
-                      size: 18, // Smaller icon size
-                      color: Colors.white,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        'https://dev.orderbookings.com${comment.imageUrl}',
+                        height: 100, // Set thumbnail height
+                        width: double.infinity, // Constrain width
+                        fit: BoxFit.cover, // Adjust image scaling
+                      ),
                     ),
                   ),
-              ],
+                ],
+              ),
+            const SizedBox(height: 4),
+            Text(
+              DateFormat.yMd()
+                  .add_jm()
+                  .format(comment.timestamp ?? DateTime.now()),
+              style: const TextStyle(
+                fontSize: 10,
+                color: Colors.black54,
+              ),
             ),
           ],
         ),

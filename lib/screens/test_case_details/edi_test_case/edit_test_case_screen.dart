@@ -136,33 +136,49 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
 
   Future<void> _uploadImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile =
-    await picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
+    if (pickedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No image selected.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return; // Exit if no image is selected
     }
-    if (_imageFile == null) return;
-    // Read the image file as bytes
-    Uint8List fileBytes = await _imageFile!.readAsBytes();
 
-    // Get the image file name
+    // Read the image file
+    setState(() {
+      _imageFile = File(pickedFile.path); // Store the selected image
+    });
+
+    Uint8List fileBytes = await _imageFile!.readAsBytes();
     String fileName = _imageFile!.uri.pathSegments.last;
 
-    // Wait for the image upload to complete and get the response
-    //await widget.onUploadImage(fileBytes, fileName);
-    Response responseApi = await dataService.uploadFile(fileBytes, fileName);
+    try {
+      // Upload the file
+      Response responseApi = await dataService.uploadFile(fileBytes, fileName);
 
-    // At this point, the response should be updated
-    if (responseApi.err!.isEmpty) {
-      print("Image uploaded successfully: ${responseApi.data}");
-    } else {
-      print("Error uploading image: ${responseApi.err}");
+      if (responseApi.err!.isEmpty) {
+        setState(() {
+          imageURl = responseApi.data['data']; // Update the uploaded URL
+        });
+        print("Image uploaded successfully: ${responseApi.data}");
+      } else {
+        throw Exception(responseApi.err);
+      }
+    } catch (e) {
+      print("Error uploading image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error uploading image.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
-     imageURl = _imageFile != null ? responseApi.data['data'] : '';
   }
+
   Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
       // Prepare the comment data
@@ -239,7 +255,7 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            'Edit Test Case: ${widget.testCase.name}(${widget.testCase.id})'),
+            'Edit Test Case: ${widget.testCase.name}'),
       ),
       body: SingleChildScrollView(
         child: Padding(

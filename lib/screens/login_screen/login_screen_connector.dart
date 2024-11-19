@@ -18,6 +18,7 @@ class LoginScreenConnector extends StatelessWidget {
       builder: (context, vm) => LoginScreen(
         isLoading: vm.isLoading,
         err: vm.err,
+        userModel: vm.userModel,
         signInWithEmailAndPassword: (String email, String password) {
           vm.signInWithEmailAndPasswordTypeDef(email,password);
         },

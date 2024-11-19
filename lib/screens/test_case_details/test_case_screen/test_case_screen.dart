@@ -103,7 +103,7 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
                           prefixIcon:
                           const Icon(Icons.search, color: Colors.grey),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(12),
                             borderSide:
                             const BorderSide(color: Colors.grey, width: 1),
                           ),
@@ -149,7 +149,7 @@ class _TestCaseScreenState extends State<TestCaseScreen> {
                 margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 elevation: 6,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 color: getStatusColor(testCase.status!),
                 child: ListTile(

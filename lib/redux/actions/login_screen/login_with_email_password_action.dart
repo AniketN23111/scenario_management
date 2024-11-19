@@ -23,7 +23,7 @@ class LoginWithEmailPasswordAction extends ReduxAction<AppState> {
 
     try{
       // Call createUser to fetch UserModel
-      UserModel userModel = await FirestoreService().createUser(email, password);
+      UserModel userModel = await FirestoreService().fetchUser(email, password);
       roleID =userModel.designation!;
 
       // Save UserModel using HiveService
@@ -37,12 +37,12 @@ class LoginWithEmailPasswordAction extends ReduxAction<AppState> {
       if (e.code == 'user-not-found') {
         errorMessage ='No user found for that email.';
       } else if (e.code == 'wrong-password') {
-        errorMessage ='Wrong password provided for that user.';
+        errorMessage ='Wrong password';
       }
       else {
         errorMessage = "Failed to register: ${e.message}";
       }
-      return state.copy(err: errorMessage);
+      return state.copy(err: errorMessage,userModel: UserModel());
     }
   }
 
