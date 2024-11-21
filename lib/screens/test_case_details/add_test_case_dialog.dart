@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../../firebase/firestore_services.dart';
 import '../../models/scenario.dart';
@@ -65,20 +64,9 @@ class _AddTestCaseDialogState extends State<AddTestCaseDialog> {
       widget.onTestCaseAdded();
 
       // Close the dialog
+      if(!mounted) return;
       Navigator.of(context).pop();
     }
-  }
-
-  Future<void> _pickAndUploadImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(withData: true);
-    if (result == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No file picked')));
-      return;
-    }
-    setState(() {
-      fileBytes = result.files.first.bytes;
-      fileName = result.names.first!;
-    });
   }
 
   @override
@@ -136,8 +124,6 @@ class _AddTestCaseDialogState extends State<AddTestCaseDialog> {
                   );
                 },
               ),
-
-              ElevatedButton(onPressed: _pickAndUploadImage, child: const Text('Upload File')),
               ElevatedButton(onPressed: _submitTestCaseForm, child: const Text('Save Test Case')),
             ],
           ),

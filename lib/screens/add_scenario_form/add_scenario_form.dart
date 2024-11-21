@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scenario_management/models/user_model.dart';
 import 'package:scenario_management/models/scenario.dart';
+import 'package:scenario_management/utility/no_space_formatter.dart';
 
 class AddScenarioForm extends StatefulWidget {
   final UserModel userModel;
@@ -63,7 +64,7 @@ class _AddScenarioFormState extends State<AddScenarioForm> {
   }
 
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
       final scenario = Scenario(
         id: _idController.text,
@@ -77,6 +78,8 @@ class _AddScenarioFormState extends State<AddScenarioForm> {
       );
 
       widget.addScenario(scenario);
+      await Future.delayed(const Duration(seconds: 2));
+      widget.fetchProjects();
       Navigator.pop(context);
     }
   }
@@ -101,6 +104,9 @@ class _AddScenarioFormState extends State<AddScenarioForm> {
               decoration: const InputDecoration(labelText: 'Scenario Name'),
               validator: (value) =>
                   value?.isEmpty ?? true ? 'Enter a scenario name' : null,
+              inputFormatters: [
+                NoSpacesFormatter()
+              ],
             ),
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Project'),

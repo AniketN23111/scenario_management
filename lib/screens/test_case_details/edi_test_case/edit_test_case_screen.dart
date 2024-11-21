@@ -68,14 +68,15 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
   Future<List<Comments>> list = Future.value([]);
   File? _imageFile;
   DataService dataService = locator();
-  String imageURl='';
+  String imageURl = '';
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.testCase.name);
-    _testCaseIDController =
-        TextEditingController(text: widget.testCase.id);
+    _testCaseIDController = TextEditingController(text: widget.testCase.id);
     _descriptionController =
         TextEditingController(text: widget.testCase.description);
     _status = widget.testCase.status;
@@ -121,41 +122,52 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
         await _storeStatusChange(updatedTestCase);
       }
 
+      if (!mounted) return;
       // Show a success message and navigate back
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Test Case Updated Successfully')),
-      );
+      scaffoldMessengerKey.currentState!
+        ..hideCurrentSnackBar
+        ..showSnackBar(
+          const SnackBar(content: Text('Test Case Updated Successfully')),
+        );
       Navigator.pop(context);
     } else {
       // Show a validation error
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
-      );
+      scaffoldMessengerKey.currentState!
+        ..hideCurrentSnackBar
+        ..showSnackBar(
+          const SnackBar(content: Text('Please fill in all fields')),
+        );
     }
   }
 
   Future<void> _uploadImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile =
+        await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No image selected.'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (!mounted) return;
+      scaffoldMessengerKey.currentState!
+        ..hideCurrentSnackBar
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('No image selected.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
       return; // Exit if no image is selected
     }
 
     // Read the image file
     setState(() {
       _imageFile = File(pickedFile.path); // Store the selected image
+      print(_imageFile);
     });
+  }
 
+  Future<String> _uploadImageToBackend() async {
     Uint8List fileBytes = await _imageFile!.readAsBytes();
     String fileName = _imageFile!.uri.pathSegments.last;
-
     try {
       // Upload the file
       Response responseApi = await dataService.uploadFile(fileBytes, fileName);
@@ -164,22 +176,32 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
         setState(() {
           imageURl = responseApi.data['data']; // Update the uploaded URL
         });
-        print("Image uploaded successfully: ${responseApi.data}");
+        scaffoldMessengerKey.currentState!
+          ..hideCurrentSnackBar
+          ..showSnackBar(
+            const SnackBar(
+              content: Text('Image uploaded successfully.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
       } else {
         throw Exception(responseApi.err);
       }
     } catch (e) {
-      print("Error uploading image: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error uploading image.'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      scaffoldMessengerKey.currentState!
+        ..hideCurrentSnackBar
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Error uploading image.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
     }
+    return imageURl;
   }
 
   Future<void> _addComment() async {
+    String imageURL = await _uploadImageToBackend();
     if (_commentController.text.isNotEmpty) {
       // Prepare the comment data
       final commentData = {
@@ -187,7 +209,7 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
         'text': _commentController.text,
         'createdBy': widget.userModel.name,
         'createdAt': FieldValue.serverTimestamp(),
-        'imageUrl': imageURl, // Add image URL if available
+        'imageUrl': imageURL, // Add image URL if available
       };
 
       // Add the comment with the image URL (if any)
@@ -198,9 +220,11 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
       _imageFile = null; // Reset the image file after submission
       imageURl = '';
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Comment cannot be empty')),
-      );
+      scaffoldMessengerKey.currentState!
+        ..hideCurrentSnackBar
+        ..showSnackBar(
+          const SnackBar(content: Text('Comment cannot be empty')),
+        );
     }
   }
 
@@ -252,84 +276,55 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-            'Edit Test Case: ${widget.testCase.name}'),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Test Case Name (Form Field)
-              buildTextFormField(
-                enabled: true,
-                controller: _nameController,
-                label: 'Test Case Name',
-                hintText: 'Enter Test Case Name',
-              ),
-              const SizedBox(height: 8),
-              //Test Case ID
-              buildTextFormField(
-                enabled: false,
-                controller: _testCaseIDController,
-                label: 'Test Case ID',
-                hintText: '',
-              ),
-              const SizedBox(height: 8),
-              // Description (Form Field)
-              buildTextFormField(
-                enabled: true,
-                controller: _descriptionController,
-                label: 'Description',
-                hintText: 'Enter Description',
-                maxLines: 4,
-              ),
-              const SizedBox(height: 8),
-              // Status Dropdown (Form Field)
-              StatusDropdown(
-                status: _status,
-                userRole: widget.userRole,
-                onStatusChanged: (newStatus) {
-                  setState(() {
-                    _status = newStatus;
-                  });
-                },
-              ),
-              const SizedBox(height: 8),
+    return ScaffoldMessenger(
+      key: scaffoldMessengerKey,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Edit Test Case: ${widget.testCase.name}'),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Test Case Name (Form Field)
+                buildTextFormField(
+                  enabled: true,
+                  controller: _nameController,
+                  label: 'Test Case Name',
+                  hintText: 'Enter Test Case Name',
+                ),
+                const SizedBox(height: 8),
+                //Test Case ID
+                buildTextFormField(
+                  enabled: false,
+                  controller: _testCaseIDController,
+                  label: 'Test Case ID',
+                  hintText: '',
+                ),
+                const SizedBox(height: 8),
+                // Description (Form Field)
+                buildTextFormField(
+                  enabled: true,
+                  controller: _descriptionController,
+                  label: 'Description',
+                  hintText: 'Enter Description',
+                  maxLines: 4,
+                ),
+                const SizedBox(height: 8),
+                // Status Dropdown (Form Field)
+                StatusDropdown(
+                  status: _status,
+                  userRole: widget.userRole,
+                  onStatusChanged: (newStatus) {
+                    setState(() {
+                      _status = newStatus;
+                    });
+                  },
+                ),
+                const SizedBox(height: 8),
 
-              ExpansionTile(
-                shape: RoundedRectangleBorder(
-                    side: const BorderSide(color: Colors.transparent),
-                    borderRadius: BorderRadius.circular(12)),
-                backgroundColor: Colors.grey[300],
-                collapsedBackgroundColor: Colors.grey[300],
-                collapsedShape: RoundedRectangleBorder(
-                    side: const BorderSide(color: Colors.transparent),
-                    borderRadius: BorderRadius.circular(12)),
-                title: const Text('Chat '),
-                leading: const Icon(Icons.chat),
-                children: [
-                  CommentsSection(
-                    commentList: widget.commentList,
-                    userModel: widget.userModel,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Add Comment Field
-                  AddCommentField(
-                    controller: _commentController,
-                    onAddComment: _addComment,
-                    imageUpload: _uploadImage,
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Expanded Status Changes Section
-              if (widget.userRole == UserRole.testerLead)
                 ExpansionTile(
                   shape: RoundedRectangleBorder(
                       side: const BorderSide(color: Colors.transparent),
@@ -339,38 +334,69 @@ class _EditTestCaseScreenState extends State<EditTestCaseScreen> {
                   collapsedShape: RoundedRectangleBorder(
                       side: const BorderSide(color: Colors.transparent),
                       borderRadius: BorderRadius.circular(12)),
-                  title: const Text('Status Changes'),
-                  leading: const Icon(Icons.update),
+                  title: const Text('Chat '),
+                  leading: const Icon(Icons.chat),
                   children: [
-                    // _buildStatusChangesSection(),
-                    StatusChangesSection(
-                      statusChangeList:
-                          widget.statusChangeList.take(10).toList(),
+                    CommentsSection(
+                      commentList: widget.commentList,
+                      userModel: widget.userModel,
                     ),
+                    const SizedBox(height: 16),
+
+                    // Add Comment Field
+                    AddCommentField(
+                      controller: _commentController,
+                      onAddComment: _addComment,
+                      imageUpload: _uploadImage,
+                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
-              const SizedBox(
-                height: 20,
-              ),
-              // Save Button
-              Center(
-                child: ElevatedButton(
-                  onPressed: _submitTestCaseForm,
-                  style: ElevatedButton.styleFrom(
+                const SizedBox(height: 16),
+                // Expanded Status Changes Section
+                if (widget.userRole == UserRole.testerLead)
+                  ExpansionTile(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    backgroundColor: Colors.blueAccent,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 30),
+                        side: const BorderSide(color: Colors.transparent),
+                        borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: Colors.grey[300],
+                    collapsedBackgroundColor: Colors.grey[300],
+                    collapsedShape: RoundedRectangleBorder(
+                        side: const BorderSide(color: Colors.transparent),
+                        borderRadius: BorderRadius.circular(12)),
+                    title: const Text('Status Changes'),
+                    leading: const Icon(Icons.update),
+                    children: [
+                      // _buildStatusChangesSection(),
+                      StatusChangesSection(
+                        statusChangeList:
+                            widget.statusChangeList.take(10).toList(),
+                      ),
+                    ],
                   ),
-                  child: const Text(
-                    'Save Changes',
-                    style: TextStyle(color: Colors.white),
+                const SizedBox(
+                  height: 20,
+                ),
+                // Save Button
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _submitTestCaseForm,
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      backgroundColor: Colors.blueAccent,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 30),
+                    ),
+                    child: const Text(
+                      'Save Changes',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
